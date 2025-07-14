@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-flutterhealthapp-dev-886e3-authRole",
+      "UnauthRoleArn": "arn:aws:iam::017140924425:role/amplify-flutterhealthapp-dev-886e3-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::017140924425:role/amplify-flutterhealthapp-dev-886e3-authRole",
+      "Region": "eu-central-1",
+      "DeploymentBucketName": "amplify-flutterhealthapp-dev-886e3-deployment",
+      "UnauthRoleName": "amplify-flutterhealthapp-dev-886e3-unauthRole",
+      "StackName": "amplify-flutterhealthapp-dev-886e3",
+      "StackId": "arn:aws:cloudformation:eu-central-1:017140924425:stack/amplify-flutterhealthapp-dev-886e3/7096f840-60b3-11f0-ae9e-02e31174e691",
+      "AmplifyAppId": "d2k4ipq9qif3ja"
+    },
+    "categories": {
+      "auth": {
+        "flutterhealthapp76e5b9d6": {}
+      }
+    }
+  }
+}
