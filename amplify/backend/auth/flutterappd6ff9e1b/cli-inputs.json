@@ -1,10 +1,10 @@
 {
   "version": "1",
   "cognitoConfig": {
-    "identityPoolName": "flutterhealthapp76e5b9d6_identitypool_76e5b9d6",
+    "identityPoolName": "flutterappd6ff9e1b_identitypool_d6ff9e1b",
     "allowUnauthenticatedIdentities": false,
-    "resourceNameTruncated": "flutte76e5b9d6",
-    "userPoolName": "flutterhealthapp76e5b9d6_userpool_76e5b9d6",
+    "resourceNameTruncated": "flutted6ff9e1b",
+    "userPoolName": "flutterappd6ff9e1b_userpool_d6ff9e1b",
     "autoVerifiedAttributes": [
       "email"
     ],
@@ -31,10 +31,10 @@
     "userpoolClientReadAttributes": [
       "email"
     ],
-    "userpoolClientLambdaRole": "flutte76e5b9d6_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "flutted6ff9e1b_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "sharedId": "76e5b9d6",
-    "resourceName": "flutterhealthapp76e5b9d6",
+    "sharedId": "d6ff9e1b",
+    "resourceName": "flutterappd6ff9e1b",
     "authSelections": "identityPoolAndUserPool",
     "useDefault": "default",
     "usernameAttributes": [
