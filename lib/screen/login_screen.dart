@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
-import 'package:flutter_health_app_new/PatientDashboard%20.dart';
+import 'package:flutter_health_app_new/patientDashboard.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
 import 'package:flutter_health_app_new/screen/signUp_screen.dart';
 import 'package:provider/provider.dart';

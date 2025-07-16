@@ -1,0 +1,14 @@
+{
+  "resourceName": "dynamoFlutter",
+  "tableName": "dynamoFlutter",
+  "partitionKey": {
+    "fieldName": "id",
+    "fieldType": "string"
+  },
+  "sortKey": {
+    "fieldName": "time",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}

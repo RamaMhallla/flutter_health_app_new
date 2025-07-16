@@ -3,7 +3,6 @@ import 'package:flutter_health_app_new/widgets/drawer_widget.dart';
 import 'prediction_page.dart';
 import 'dart:convert';
 import 'dart:async';
-import 'package:amplify_flutter/amplify_flutter.dart';
 import 'services/mqtt_service.dart';
 
 class AppColor {
