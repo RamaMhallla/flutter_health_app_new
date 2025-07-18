@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-
-import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter_health_app_new/patientDashboard.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
 import 'package:flutter_health_app_new/screen/signUp_screen.dart';
+
 import 'package:provider/provider.dart';
+
+import 'package:amplify_flutter/amplify_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -31,27 +32,24 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _checkIfAlreadySignedIn() async {
     try {
       final session = await Amplify.Auth.fetchAuthSession();
-
       if (session.isSignedIn && mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const PatientDashboard()),
         );
       }
-    } on AuthException catch (e) {
-      debugPrint("❌ Auth exception: ${e.message}");
     } catch (e) {
-      debugPrint("⚠️ Unexpected error: $e");
+      debugPrint("⚠️ Error checking session: $e");
     }
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+      _emailController.dispose();
+      _passwordController.dispose();
+      _rememberMe = false;
+      super.dispose();
   }
-
   // Email validation regex
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
@@ -71,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Provider.of<UserProvider>(
             context,
             listen: false,
-          ).loadUserAttributes();
+          ).login(_rememberMe);
 
           Navigator.pushReplacement(
             context,

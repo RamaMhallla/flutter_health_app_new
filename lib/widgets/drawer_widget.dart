@@ -147,7 +147,7 @@ class DrawerWidget extends StatelessWidget {
                         options: const SignOutOptions(globalSignOut: true),
                       );
 
-                      userProvider.clearUser(); // 🧹 Clear user info
+                      userProvider.signOut(); // 🧹 Clear user info
 
                       if (context.mounted) {
                         Navigator.of(context).pushAndRemoveUntil(

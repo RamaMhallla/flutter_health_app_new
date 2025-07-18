@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
-import 'package:flutter_health_app_new/screen/signUp_screen.dart';
+import 'package:flutter_health_app_new/root/root.dart';
 import 'package:provider/provider.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         ),
         debugShowCheckedModeBanner: false,
-        home: const SignUpScreen(), // أو LoginScreen / Dashboard ...
+        home: const Root(), // أو LoginScreen / Dashboard ...
       ),
     );
   }
