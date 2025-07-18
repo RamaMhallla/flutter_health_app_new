@@ -16,7 +16,6 @@
         "flutterappd6ff9e1b": {}
       },
       "storage": {
-        "dynamoFlutter": {},
         "Todo5yid5luj55evljbdqvlpjylwbaNONE": {
           "tableName": "Todo-5yid5luj55evljbdqvlpjylwba-NONE",
           "region": "eu-central-1",

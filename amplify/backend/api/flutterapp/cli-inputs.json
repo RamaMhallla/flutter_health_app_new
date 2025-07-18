@@ -8,6 +8,11 @@
       "expirationTime": 30,
       "apiKeyExpirationDate": "2025-08-16T16:28:31.508Z",
       "keyDescription": "patientsData"
+    },
+    "conflictResolution": {
+      "defaultResolutionStrategy": {
+        "type": "AUTOMERGE"
+      }
     }
   }
 }

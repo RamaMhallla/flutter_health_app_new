@@ -103,10 +103,6 @@
       "providerPlugin": "awscloudformation",
       "service": "DynamoDB",
       "serviceType": "imported"
-    },
-    "dynamoFlutter": {
-      "providerPlugin": "awscloudformation",
-      "service": "DynamoDB"
     }
   }
 }
