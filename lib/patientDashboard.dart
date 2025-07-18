@@ -76,7 +76,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
   void initState() {
     super.initState();
     mqttService.onMessageReceived = handleMQTTMessage;
-    mqttService.onConnected = () => setState(() => _isConnected = true);
+    mqttService.onConnected = () => setState(() => _isConnected = false);
     mqttService.onDisconnected = () => setState(() => _isConnected = false);
     mqttService.connect();
   }

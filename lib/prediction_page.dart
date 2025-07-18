@@ -1,8 +1,10 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_health_app_new/models/patientData.dart';
 
 class AppColor {
   static const primaryBlue = Color(0xFF5B8FB9);
@@ -141,6 +143,7 @@ class _PredictionPageState extends State<PredictionPage> {
     var input = [normalizedInput];
     var output = List.filled(1 * 1, 0).reshape([1, 1]);
     interpreter.run(input, output);
+
     return output[0][0].toDouble();
   }
 
@@ -279,7 +282,7 @@ class _PredictionPageState extends State<PredictionPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => {memorize("email", result, List.empty())},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.primaryBlue,
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -303,5 +306,27 @@ class _PredictionPageState extends State<PredictionPage> {
         ),
       ),
     );
+  }
+  
+Future<void>  memorize(String? email, String result, List<double> normalizedInput) async{
+  try {
+    final newPatientRecord = patientData( 
+      id: email,
+      time: TemporalDateTime.now().toString(),
+      input: normalizedInput.map((e) => e.toString()).toList(),
+      output: result, // This maps to your 'output: String' field
+    
+    );
+    await Amplify.DataStore.save(newPatientRecord);
+    safePrint('Patient data saved successfully to DynamoDB via DataStore!');
+  } on AuthException catch (e) {
+    safePrint('Error getting user for saving data: ${e.message}');
+    // Handle cases where the user is not authenticated.
+  } on DataStoreException catch (e) {
+    safePrint('Error saving patient data: ${e.message}');
+  } catch (e) {
+    safePrint('An unexpected error occurred during data saving: $e');
+  }
+
   }
 }

@@ -4,6 +4,9 @@ import 'package:flutter_health_app_new/screen/signUp_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:amplify_api/amplify_api.dart'; 
+import 'package:amplify_datastore/amplify_datastore.dart'; 
+import 'models/ModelProvider.dart';
 import 'amplifyconfiguration.dart';
 
 void main() async {
@@ -15,10 +18,23 @@ void main() async {
 Future<void> _configureAmplify() async {
   try {
     final authPlugin = AmplifyAuthCognito();
-    await Amplify.addPlugin(authPlugin);
+    final apiPlugin = AmplifyAPI(options: APIPluginOptions(modelProvider: ModelProvider.instance),);
+    final dataStorePlugin = AmplifyDataStore(modelProvider: ModelProvider.instance);
+
+    await Amplify.addPlugins([
+      authPlugin,
+      apiPlugin,
+      dataStorePlugin, // Add this only if you installed amplify_datastore in pubspec.yaml
+      // If you are also using analytics, add it here:
+      // AmplifyAnalyticsPinpoint(),
+    ]);
     await Amplify.configure(amplifyconfig);
+
+    safePrint("Amplify configured successfully.");
   } on AmplifyAlreadyConfiguredException {
-    safePrint("Amplify already configured.");
+    safePrint("Amplify already configured. This can happen when you hot reload during development.");
+  } on AmplifyException catch (e) {
+    safePrint("Error configuring Amplify: $e");
   }
 }
 
