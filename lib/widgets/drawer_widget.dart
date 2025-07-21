@@ -45,9 +45,7 @@ class DrawerWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            userProvider.userEmail.isNotEmpty
-                                ? userProvider.userEmail.split('@')[0]
-                                : "Patient Name",
+                            "Email: ",
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,

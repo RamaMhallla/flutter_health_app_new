@@ -69,12 +69,13 @@ class _LoginScreenState extends State<LoginScreen> {
           Provider.of<UserProvider>(
             context,
             listen: false,
-          ).login(_rememberMe);
-
+          ).login(_rememberMe,_emailController.text.trim());
           Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const PatientDashboard()),
-          );
+              context,
+              MaterialPageRoute(builder: (_) => const PatientDashboard()),
+           );
+          
+
         } else {
           _showError('Sign in not complete. Please verify your credentials.');
         }

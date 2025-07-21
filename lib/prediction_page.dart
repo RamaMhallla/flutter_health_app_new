@@ -1,10 +1,11 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_health_app_new/models/ModelProvider.dart';
+import 'package:flutter_health_app_new/providers/user_provider.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_health_app_new/models/patientData.dart';
 
 class AppColor {
   static const primaryBlue = Color(0xFF5B8FB9);
@@ -18,16 +19,14 @@ class AppColor {
 }
 
 class PredictionPage extends StatefulWidget {
-  final List<double> inputFeatures;
+  final Map<String,double> inputFeatures;
   final String name;
-  final int age;
-  final String gender;
+  final Gender gender;
 
   const PredictionPage({
     super.key,
     required this.inputFeatures,
     required this.name,
-    required this.age,
     required this.gender,
   });
 
@@ -41,42 +40,60 @@ class _PredictionPageState extends State<PredictionPage> {
   String source = '';
   double predictionValue = 0.0;
 
-  List<double> mean = [
-    54.4628099,
-    0.65702479,
-    0.991735537,
-    130.359504,
-    246.842975,
-    0.128099174,
-    0.553719008,
-    150.115702,
-    0.314049587,
-    1.01322314,
-    1.4214876,
-    0.681818182,
-    2.30165289,
-  ];
+  final Map<ChestPain, String> chestPainLabels = {
+    ChestPain.TYPICAL: 'Typical angina',
+    ChestPain.ATYPICAL: 'Atypical angina',
+    ChestPain.NON_ANGINAL: 'Non-anginal pain',
+    ChestPain.ASYMPTOMATIC: 'Asymptomatic',
+  };
 
-  List<double> scale = [
-    9.18545502,
-    0.47470329,
-    1.02041855,
-    16.79405187,
-    52.68627062,
-    0.3342002,
-    0.52931287,
-    22.30616788,
-    0.46413623,
-    1.10029614,
-    0.60646743,
-    0.98857105,
-    0.59258273,
-  ];
+  final Map<Thalassemia, String> thalassemiaLabels = {
+    Thalassemia.NORMAL: 'Normal',
+    Thalassemia.FIXED_DEFECT: 'Fixed Defect',
+    Thalassemia.REVERSIBLE_DEFECT: 'Reversible Defect',
+  };
 
-  List<double> normalize(List<double> input) {
-    return List.generate(input.length, (i) => (input[i] - mean[i]) / scale[i]);
-  }
+  Map<String,double> mean = {
+    'age': 54.4628099,
+    'gender':0.65702479,
+    'chestPain':0.991735537,
+    'blood Pressure':130.359504,
+    'cholesterol':246.842975,
+    'fastingBloodSugar':0.128099174,
+    'restingEcg':0.553719008,
+    'maxHeartRate':150.115702,
+    'exerciseAngina':0.314049587,
+    'stDepression':1.01322314,
+    'slope':1.4214876,
+    'numberOfVessels':0.681818182,
+    'thalassemia':2.30165289,
+  };
 
+  Map<String,double> scale = {
+    'age':9.18545502,
+    'gender':0.47470329,
+    'chestPain':1.02041855,
+    'blood Pressure': 16.79405187,
+    'cholesterol':52.68627062,
+    'fastingBloodSugar':0.3342002,
+    'restingEcg':0.52931287,
+    'maxHeartRate':22.30616788,
+    'exerciseAngina':0.46413623,
+    'stDepression':1.10029614,
+    'slope':0.60646743,
+    'numberOfVessels':0.98857105,
+    'thalassemia':0.59258273,
+  };
+
+List<double> normalize(Map<String, double> input) {
+  List<double> ret = [];
+
+  input.forEach((key, value) {
+    ret.add((value - mean[key]!) / scale[key]!);
+  });
+
+  return ret;
+}
   @override
   void initState() {
     super.initState();
@@ -91,7 +108,7 @@ class _PredictionPageState extends State<PredictionPage> {
       double prediction;
       List<double> normalizedInput = normalize(widget.inputFeatures);
 
-      if (isOnline) {
+      if (false) {
         try {
           final url = Uri.parse(
             'https://pj1e33elr0.execute-api.eu-central-1.amazonaws.com/prod/predict',
@@ -126,6 +143,7 @@ class _PredictionPageState extends State<PredictionPage> {
         predictionValue = prediction;
         result = prediction > 0.5 ? 'High Risk Detected' : 'Low Risk (Normal)';
         _isLoading = false;
+
       });
     } catch (e) {
       setState(() {
@@ -260,11 +278,11 @@ class _PredictionPageState extends State<PredictionPage> {
                 ),
                 const SizedBox(height: 16),
                 _buildInfoRow(Icons.person, 'Name:', widget.name),
-                _buildInfoRow(Icons.cake, 'Age:', widget.age.toString()),
+                _buildInfoRow(Icons.cake, 'Age:', widget.inputFeatures['age'].toString()),
                 _buildInfoRow(
                   Icons.wc,
                   'Gender:',
-                  widget.gender[0].toUpperCase() + widget.gender.substring(1),
+                  widget.gender.toString().capitalized,
                 ),
                 const Divider(height: 32, thickness: 1),
                 Text(
@@ -282,7 +300,7 @@ class _PredictionPageState extends State<PredictionPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => {memorize("email", result, List.empty())},
+                    onPressed: () => memorize(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.primaryBlue,
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -308,13 +326,26 @@ class _PredictionPageState extends State<PredictionPage> {
     );
   }
   
-Future<void>  memorize(String? email, String result, List<double> normalizedInput) async{
+Future<void>  memorize() async{
   try {
-    final newPatientRecord = patientData( 
-      id: email,
-      time: TemporalDateTime.now().toString(),
-      input: normalizedInput.map((e) => e.toString()).toList(),
-      output: result, // This maps to your 'output: String' field
+  
+    final newPatientRecord = PatientData( 
+      id: UserProvider().userEmail,
+      timestamp: TemporalDateTime.now(),
+      age: widget.inputFeatures['age']!.toInt(),
+      gender: widget.gender,
+      chestPain: chestPainLabels.keys.elementAt(widget.inputFeatures['chestPain']!.toInt()),   
+      exerciseAngina:   widget.inputFeatures['exerciseAngina']==1.0 ? true:false,
+      cholesterol: widget.inputFeatures['cholesterol'],
+      numberOfVessels: widget.inputFeatures['numberOfVessels']!.toInt(),
+      thalassemia: thalassemiaLabels.keys.elementAt(widget.inputFeatures['thalassemia']!.toInt()),
+      fastingBloodSugar:  widget.inputFeatures['fastingBloodSugar']==1.0 ? true:false,
+      bloodPressure:  widget.inputFeatures['bloodPressure']!.toInt(),
+      restingEcg: widget.inputFeatures['restingEcg']!.toInt(), 
+      maxHeartRate:  widget.inputFeatures['maxHeartRate']!.toInt(),
+      stDepression:  widget.inputFeatures['stDepression'],
+      slope:  widget.inputFeatures['slope']!.toInt(),
+      output: predictionValue, 
     
     );
     await Amplify.DataStore.save(newPatientRecord);

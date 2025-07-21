@@ -14,35 +14,38 @@ class Root extends StatefulWidget {
 }
 
 class _RootState extends State<Root> {
-  AuthStatus _authStatus= AuthStatus.notLoggedIn;
+  AuthStatus _authStatus = AuthStatus.notLoggedIn;
+   bool _initialized = false;
+
   @override
-  void didChangeDependencies() async {
-    super.didChangeDependencies();
-    UserProvider _user=Provider.of<UserProvider>(
-            context,
-            listen: false,
-          );
-    if (_user.rememberMe){      
-    String _returnString =await _user.loadUserAttributes();
-      if (_returnString=='success'){
-        setState(() {
-           _authStatus= AuthStatus.loggedIn;
-        });
-      }
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  void _checkLoginStatus() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (userProvider.rememberMe && userProvider.userEmail.isNotEmpty) {
+      setState(() => _authStatus = AuthStatus.loggedIn);
     }
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _checkLoginStatus(); // Call async method safely
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    Widget retVal;
-    switch(_authStatus){
-      case AuthStatus.notLoggedIn:
-      retVal=LoginScreen();
-      break;
-      case AuthStatus.loggedIn:
-      retVal=PatientDashboard();
-      break;
-    }return Scaffold(
-      body: retVal, 
+    return Scaffold(
+      body: _authStatus == AuthStatus.loggedIn
+          ? const PatientDashboard()
+          : const LoginScreen(),
     );
   }
 }

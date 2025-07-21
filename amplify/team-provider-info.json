@@ -15,16 +15,6 @@
       "auth": {
         "flutterappd6ff9e1b": {}
       },
-      "storage": {
-        "Todo5yid5luj55evljbdqvlpjylwbaNONE": {
-          "tableName": "Todo-5yid5luj55evljbdqvlpjylwba-NONE",
-          "region": "eu-central-1",
-          "arn": "arn:aws:dynamodb:eu-central-1:017140924425:table/Todo-5yid5luj55evljbdqvlpjylwba-NONE",
-          "streamArn": "arn:aws:dynamodb:eu-central-1:017140924425:table/Todo-5yid5luj55evljbdqvlpjylwba-NONE/stream/2025-07-14T21:27:06.914",
-          "partitionKeyName": "id",
-          "partitionKeyType": "S"
-        }
-      },
       "api": {
         "flutterapp": {}
       }

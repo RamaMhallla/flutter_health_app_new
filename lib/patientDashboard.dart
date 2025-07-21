@@ -1,4 +1,10 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_health_app_new/models/ChestPain.dart';
+import 'package:flutter_health_app_new/models/Gender.dart';
+import 'package:flutter_health_app_new/models/Thalassemia.dart';
+import 'package:flutter_health_app_new/providers/user_provider.dart';
 import 'package:flutter_health_app_new/widgets/drawer_widget.dart';
 import 'prediction_page.dart';
 import 'dart:convert';
@@ -28,6 +34,7 @@ class PatientDashboard extends StatefulWidget {
   State<PatientDashboard> createState() => _PatientDashboardState();
 }
 
+
 class _PatientDashboardState extends State<PatientDashboard> {
   final mqttService = MQTTService();
   bool _isConnected = false;
@@ -37,43 +44,49 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
   // Form values
   int _age = 30;
-  String _gender = 'Male';
-  String _chestPainType = 'Typical angina';
+  Gender _gender = Gender.MALE;
+  ChestPain _chestPainType = ChestPain.TYPICAL;
   bool _exerciseAngina = false;
 
   final TextEditingController cholController = TextEditingController();
   final TextEditingController fbsController = TextEditingController();
-  final TextEditingController caController = TextEditingController();
+  final TextEditingController vesselsController = TextEditingController();
   final TextEditingController thalController = TextEditingController();
 
   // MQTT sensor data
-  int? trestbps;
-  int? restecg;
-  int? thalach;
-  double? oldpeak;
+  int? bloodPressure;
+  int? restingEcg;
+  int? maxHeartRate;
+  double? stDepression;
   int? slope;
   // Add these variables to support maually insert when no connect with MQTT
-  int? manualTrestbps;
-  int? manualRestecg;
-  int? manualThalach;
-  double? manualOldpeak;
+  int? manualBloodPressure;
+  int? manualRestingEcg;
+  int? manualMaxHeartRate;
+  double? manualstDepression;
   int? manualSlope;
   //bool _showManualSensorInputs = false;
 
   // State variables to add at the top of your class
   bool _fbs = false; // Fasting Blood Sugar
-  int _ca = 0; // Number of Major Vessels
-  int _thal = 0; // Thalassemia Type
+  int _vessels = 0; // Number of Major Vessels
+  Thalassemia _thalassemiaType = Thalassemia.NORMAL; // Thalassemia Type
   // Chest pain type options
-  final List<String> _chestPainTypes = [
-    'Typical angina',
-    'Atypical angina',
-    'Non-anginal pain',
-    'Asymptomatic',
-  ];
+  final Map<ChestPain, String> chestPainLabels = {
+    ChestPain.TYPICAL: 'Typical angina',
+    ChestPain.ATYPICAL: 'Atypical angina',
+    ChestPain.NON_ANGINAL: 'Non-anginal pain',
+    ChestPain.ASYMPTOMATIC: 'Asymptomatic',
+  };
+
+  final Map<Thalassemia, String> thalassemiaLabels = {
+    Thalassemia.NORMAL: 'Normal',
+    Thalassemia.FIXED_DEFECT: 'Fixed Defect',
+    Thalassemia.REVERSIBLE_DEFECT: 'Reversible Defect',
+  };
 
   @override
-  void initState() {
+  void initState() { 
     super.initState();
     mqttService.onMessageReceived = handleMQTTMessage;
     mqttService.onConnected = () => setState(() => _isConnected = false);
@@ -88,7 +101,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
     cholController.dispose();
     fbsController.dispose();
-    caController.dispose();
+    vesselsController.dispose();
     thalController.dispose();
     super.dispose();
   }
@@ -135,10 +148,10 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
       // ✅ تحديث القيم
       setState(() {
-        trestbps = data["trestbps"];
-        restecg = data["restecg"];
-        thalach = data["thalach"];
-        oldpeak = (data["oldpeak"] as num).toDouble();
+        bloodPressure = data["bloodPressure"];
+        restingEcg = data["restingEcg"];
+        maxHeartRate = data["maxHeartRate"];
+        stDepression = (data["stDepression"] as num).toDouble();
         slope = data["slope"];
       });
 
@@ -152,8 +165,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
     // تحقق من حقول الإدخال اليدوي
     final manualInputsValid =
         _age > 0 &&
-        (_gender == 'Male' || _gender == 'Female') &&
-        _chestPainTypes.contains(_chestPainType) &&
         (_exerciseAngina == true || _exerciseAngina == false) &&
         cholController.text.isNotEmpty;
 
@@ -164,12 +175,12 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
     // تحقق من بيانات الحساسات (إما من MQTT أو يدوي)
     final sensorValuesValid = _isConnected
-        ? [trestbps, restecg, thalach, oldpeak, slope].contains(null) == false
+        ? [bloodPressure, restingEcg, maxHeartRate, stDepression, slope].contains(null) == false
         : [
-                manualTrestbps,
-                manualRestecg,
-                manualThalach,
-                manualOldpeak,
+                manualBloodPressure,
+                manualRestingEcg,
+                manualMaxHeartRate,
+                manualstDepression,
                 manualSlope,
               ].contains(null) ==
               false;
@@ -182,27 +193,27 @@ class _PatientDashboardState extends State<PatientDashboard> {
     setState(() => _isLoading = true);
 
     try {
-      final trestbpsValue = _isConnected ? trestbps! : manualTrestbps!;
-      final restecgValue = _isConnected ? restecg! : manualRestecg!;
-      final thalachValue = _isConnected ? thalach! : manualThalach!;
-      final oldpeakValue = _isConnected ? oldpeak! : manualOldpeak!;
+      final bloodPressureValue = _isConnected ? bloodPressure! : manualBloodPressure!;
+      final restingEcgValue = _isConnected ? restingEcg! : manualRestingEcg!;
+      final maxHeartRateValue = _isConnected ? maxHeartRate! : manualMaxHeartRate!;
+      final stDepressionValue = _isConnected ? stDepression! : manualstDepression!;
       final slopeValue = _isConnected ? slope! : manualSlope!;
 
-      final inputFeatures = [
-        _age.toDouble(),
-        _gender == 'Male' ? 1.0 : 0.0,
-        _chestPainTypes.indexOf(_chestPainType).toDouble(),
-        trestbpsValue.toDouble(),
-        double.parse(cholController.text),
-        _fbs ? 1.0 : 0.0,
-        restecgValue.toDouble(),
-        thalachValue.toDouble(),
-        _exerciseAngina ? 1.0 : 0.0,
-        oldpeakValue,
-        slopeValue.toDouble(),
-        _ca.toDouble(),
-        _thal.toDouble(),
-      ];
+      final Map<String, double> inputFeatures = {
+        'age': _age.toDouble(), 
+        'gender': _gender == Gender.MALE ? 1.0 : 0.0,
+        'chestPain': chestPainLabels.keys.toList().indexOf(_chestPainType).toDouble(),
+        'blood Pressure':bloodPressureValue.toDouble(),
+        'cholesterol': double.parse(cholController.text),
+        'fastingBloodSugar':_fbs ? 1.0 : 0.0,
+        'restingEcg': restingEcgValue.toDouble(),
+        'maxHeartRate': maxHeartRateValue.toDouble(),
+        'exerciseAngina':_exerciseAngina ? 1.0 : 0.0,
+        'stDepression':stDepressionValue,
+        'slope':slopeValue.toDouble(),
+        'numberOfVessels':_vessels.toDouble(),
+        'thalassemia': thalassemiaLabels.keys.toList().indexOf(_thalassemiaType).toDouble(),
+      };
 
       if (!mounted) return;
 
@@ -221,7 +232,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
       //   thalach: _isConnected ? thalach! : manualThalach ?? 0,
       //   oldpeak: _isConnected ? oldpeak! : manualOldpeak ?? 0.0,
       //   slope: _isConnected ? slope! : manualSlope ?? 0,
-      //   ca: _ca,
+      //   vessels: _vessels,
       //   thal: _thal,
       //   result: "", // we can edit it after analysis
       // );
@@ -245,7 +256,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
           builder: (context) => PredictionPage(
             inputFeatures: inputFeatures,
             name: "Patient",
-            age: _age,
             gender: _gender,
           ),
         ),
@@ -263,31 +273,31 @@ class _PatientDashboardState extends State<PatientDashboard> {
         icon: Icons.monitor_heart,
         title: 'Blood Pressure',
         unit: 'mmHg',
-        value: manualTrestbps?.toString() ?? '',
+        value: manualBloodPressure?.toString() ?? '',
         hint: '120',
-        onChanged: (value) => manualTrestbps = int.tryParse(value),
+        onChanged: (value) => manualBloodPressure = int.tryParse(value),
       ),
       _buildSensorInputCard(
         icon: Icons.monitor_heart,
         title: 'Resting ECG',
-        value: manualRestecg?.toString() ?? '',
+        value: manualRestingEcg?.toString() ?? '',
         hint: '0-2',
-        onChanged: (value) => manualRestecg = int.tryParse(value),
+        onChanged: (value) => manualRestingEcg = int.tryParse(value),
       ),
       _buildSensorInputCard(
         icon: Icons.favorite,
         title: 'Max Heart Rate',
         unit: 'BPM',
-        value: manualThalach?.toString() ?? '',
+        value: manualMaxHeartRate?.toString() ?? '',
         hint: '150',
-        onChanged: (value) => manualThalach = int.tryParse(value),
+        onChanged: (value) => manualMaxHeartRate = int.tryParse(value),
       ),
       _buildSensorInputCard(
         icon: Icons.trending_down,
         title: 'ST Depression',
-        value: manualOldpeak?.toString() ?? '',
+        value: manualstDepression?.toString() ?? '',
         hint: '1.5',
-        onChanged: (value) => manualOldpeak = double.tryParse(value),
+        onChanged: (value) => manualstDepression = double.tryParse(value),
       ),
       _buildSensorInputCard(
         icon: Icons.stacked_line_chart,
@@ -512,33 +522,51 @@ class _PatientDashboardState extends State<PatientDashboard> {
             Expanded(
               child: ChoiceChip(
                 label: const Text('Male'),
-                selected: _gender == 'Male',
+                selected: _gender == Gender.MALE,
                 onSelected: (selected) {
                   setState(() {
-                    _gender = 'Male';
+                    _gender =  Gender.MALE;
                   });
                 },
                 selectedColor: AppColor.primaryBlue,
                 labelStyle: TextStyle(
-                  color: _gender == 'Male'
+                  color: _gender ==  Gender.MALE
                       ? Colors.white
                       : AppColor.textPrimary,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 3),
             Expanded(
               child: ChoiceChip(
                 label: const Text('Female'),
-                selected: _gender == 'Female',
+                selected: _gender ==  Gender.FEMALE,
                 onSelected: (selected) {
                   setState(() {
-                    _gender = 'Female';
+                    _gender =Gender.FEMALE;
                   });
                 },
                 selectedColor: AppColor.primaryBlue,
                 labelStyle: TextStyle(
-                  color: _gender == 'Female'
+                  color: _gender ==Gender.FEMALE
+                      ? Colors.white
+                      : AppColor.textPrimary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 3),
+            Expanded(
+              child: ChoiceChip(
+                label: const Text('Other'),
+                selected: _gender ==  Gender.OTHER,
+                onSelected: (selected) {
+                  setState(() {
+                    _gender =Gender.OTHER;
+                  });
+                },
+                selectedColor: AppColor.primaryBlue,
+                labelStyle: TextStyle(
+                  color: _gender ==Gender.OTHER
                       ? Colors.white
                       : AppColor.textPrimary,
                 ),
@@ -551,7 +579,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
   }
 
   Widget _buildChestPainDropdown() {
-    return Column(
+  return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
@@ -562,7 +590,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
           ),
         ),
         const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
+        DropdownButtonFormField<ChestPain>(
           value: _chestPainType,
           decoration: InputDecoration(
             border: OutlineInputBorder(
@@ -574,8 +602,11 @@ class _PatientDashboardState extends State<PatientDashboard> {
               vertical: 14,
             ),
           ),
-          items: _chestPainTypes.map((String value) {
-            return DropdownMenuItem<String>(value: value, child: Text(value));
+          items: ChestPain.values.map((ChestPain type) {
+            return DropdownMenuItem<ChestPain>(
+              value: type,
+              child: Text(chestPainLabels[type]!),
+            );
           }).toList(),
           onChanged: (newValue) {
             setState(() {
@@ -586,6 +617,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
       ],
     );
   }
+
 
   Widget _buildExerciseAnginaToggle() {
     return Column(
@@ -894,15 +926,15 @@ class _PatientDashboardState extends State<PatientDashboard> {
           children: List.generate(5, (index) {
             return ChoiceChip(
               label: Text('$index'),
-              selected: _ca == index,
+              selected: _vessels == index,
               onSelected: (selected) {
                 setState(() {
-                  _ca = index;
+                  _vessels = index;
                 });
               },
               selectedColor: AppColor.primaryBlue,
               labelStyle: TextStyle(
-                color: _ca == index ? Colors.white : AppColor.textPrimary,
+                color: _vessels == index ? Colors.white : AppColor.textPrimary,
               ),
             );
           }),
@@ -912,12 +944,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
   }
 
   Widget _buildThalassemiaSelector() {
-    const Map<int, String> thalOptions = {
-      0: 'Normal',
-      1: 'Fixed Defect',
-      2: 'Reversible Defect',
-    };
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -939,8 +965,8 @@ class _PatientDashboardState extends State<PatientDashboard> {
           ],
         ),
         const SizedBox(height: 8),
-        DropdownButtonFormField<int>(
-          value: _thal,
+        DropdownButtonFormField<Thalassemia>(
+          value: _thalassemiaType,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -951,15 +977,15 @@ class _PatientDashboardState extends State<PatientDashboard> {
               vertical: 14,
             ),
           ),
-          items: thalOptions.entries.map((entry) {
-            return DropdownMenuItem<int>(
-              value: entry.key,
-              child: Text(entry.value),
-            );
+          items: Thalassemia.values.map((Thalassemia type) {
+                  return DropdownMenuItem<Thalassemia>(
+                    value: type,
+                    child: Text(thalassemiaLabels[type]!),
+                  );
           }).toList(),
-          onChanged: (value) {
+          onChanged: (newValue) {
             setState(() {
-              _thal = value!;
+              _thalassemiaType = newValue!;
             });
           },
         ),
@@ -1006,22 +1032,22 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   _buildDataTile(
                     icon: Icons.monitor_heart,
                     title: 'Blood Pressure',
-                    value: '${trestbps ?? '--'} mmHg',
+                    value: '${bloodPressure ?? '--'} mmHg',
                   ),
                   _buildDataTile(
                     icon: Icons.monitor_heart,
                     title: 'Resting ECG',
-                    value: '${restecg ?? '--'}',
+                    value: '${restingEcg ?? '--'}',
                   ),
                   _buildDataTile(
                     icon: Icons.favorite,
                     title: 'Max Heart Rate',
-                    value: '${thalach ?? '--'} BPM',
+                    value: '${maxHeartRate ?? '--'} BPM',
                   ),
                   _buildDataTile(
                     icon: Icons.trending_down,
                     title: 'ST Depression',
-                    value: oldpeak?.toStringAsFixed(2) ?? '--',
+                    value: stDepression?.toStringAsFixed(2) ?? '--',
                   ),
                   _buildDataTile(
                     icon: Icons.stacked_line_chart,
@@ -1213,7 +1239,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
           children: [
             _buildManualInputSection(),
             _buildMedicalDataSection(),
-
             _buildSensorDataSection(),
             const SizedBox(height: 24),
             _buildAnalyzeButton(),
