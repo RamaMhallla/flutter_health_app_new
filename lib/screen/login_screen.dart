@@ -26,22 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _checkIfAlreadySignedIn();
   }
 
-  Future<void> _checkIfAlreadySignedIn() async {
-    try {
-      final session = await Amplify.Auth.fetchAuthSession();
-      if (session.isSignedIn && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const PatientDashboard()),
-        );
-      }
-    } catch (e) {
-      debugPrint("⚠️ Error checking session: $e");
-    }
-  }
 
   @override
   void dispose() {
