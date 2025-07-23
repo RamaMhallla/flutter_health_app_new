@@ -1,13 +1,9 @@
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_health_app_new/models/ChestPain.dart';
 import 'package:flutter_health_app_new/models/Gender.dart';
 import 'package:flutter_health_app_new/models/Thalassemia.dart';
-import 'package:flutter_health_app_new/providers/user_provider.dart';
-import 'package:flutter_health_app_new/screen/login_screen.dart';
 import 'package:flutter_health_app_new/widgets/drawer_widget.dart';
-import 'package:provider/provider.dart';
 import 'prediction_page.dart';
 import 'dart:convert';
 import 'dart:async';
@@ -29,15 +25,15 @@ class AppColor {
   static const textSecondary = Color(0xFF7F8C8D);
 }
 
-class PatientDashboard extends StatefulWidget {
-  const PatientDashboard({super.key});
+class PatientInputDashboard extends StatefulWidget {
+  const PatientInputDashboard({super.key});
 
   @override
-  State<PatientDashboard> createState() => _PatientDashboardState();
+  State<PatientInputDashboard> createState() => _PatientInputDashboardState();
 }
 
 
-class _PatientDashboardState extends State<PatientDashboard> {
+class _PatientInputDashboardState extends State<PatientInputDashboard> {
   final mqttService = MQTTService();
   bool _isConnected = false;
   bool _isLoading = false;
@@ -91,7 +87,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
   void initState() { 
     super.initState();
     mqttService.onMessageReceived = handleMQTTMessage;
-    mqttService.onConnected = () => setState(() => _isConnected = false);
+    mqttService.onConnected = () => setState(() => _isConnected = true);
     mqttService.onDisconnected = () => setState(() => _isConnected = false);
     mqttService.connect();
   }
@@ -257,7 +253,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
         MaterialPageRoute(
           builder: (context) => PredictionPage(
             inputFeatures: inputFeatures,
-            name: "Patient",
             gender: _gender,
           ),
         ),
@@ -1072,27 +1067,40 @@ class _PatientDashboardState extends State<PatientDashboard> {
   }
 
   Widget _buildConnectionStatus() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: _isConnected ? AppColor.success : AppColor.error,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _isConnected ? Icons.wifi : Icons.wifi_off,
-            size: 16,
-            color: Colors.white,
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: _isConnected ? AppColor.success : AppColor.error,
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(width: 4),
-          Text(
-            _isConnected ? 'Connected' : 'Disconnected',
-            style: const TextStyle(color: Colors.white, fontSize: 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _isConnected ? Icons.wifi : Icons.wifi_off,
+                size: 16,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                _isConnected ? 'Connected' : 'Disconnected',
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width:3),
+        Switch(
+          value: _isConnected,
+          onChanged: (value) => setState(() => _isConnected = value),
+          activeColor:AppColor.success, 
+          inactiveThumbColor: AppColor.error,
+          inactiveTrackColor: const Color.fromARGB(255, 255, 155, 155),
+          trackOutlineColor: WidgetStateProperty.all(_isConnected?Color.fromARGB(0, 255, 255, 255) :Color.fromARGB(255, 255, 155, 155)),
+        ),
+      ],
     );
   }
 

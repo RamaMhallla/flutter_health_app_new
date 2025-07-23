@@ -17,10 +17,10 @@ enum Thalassemia{
   REVERSIBLE_DEFECT
 }
 
-type PatientData @model @auth(rules: [
-    { allow: private, operations: [create, read, update, delete] }
-  ]) {
-  id: ID!
+type PatientData @model 
+@auth(rules: [    { allow: private, operations: [create, read, update, delete] }  ])
+{
+  id: ID! @primaryKey(sortKeyFields: ["timestamp"])
   timestamp: AWSDateTime!
   age: Int
   gender: Gender

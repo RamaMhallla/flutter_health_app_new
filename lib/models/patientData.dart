@@ -53,9 +53,19 @@ class PatientData extends amplify_core.Model {
   String getId() => id;
   
   PatientDataModelIdentifier get modelIdentifier {
+    try {
       return PatientDataModelIdentifier(
-        id: id
+        id: id,
+        timestamp: _timestamp!
       );
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
   }
   
   amplify_core.TemporalDateTime get timestamp {
@@ -214,10 +224,10 @@ class PatientData extends amplify_core.Model {
     return buffer.toString();
   }
   
-  PatientData copyWith({amplify_core.TemporalDateTime? timestamp, int? age, Gender? gender, ChestPain? chestPain, bool? exerciseAngina, double? cholesterol, int? numberOfVessels, Thalassemia? thalassemia, bool? fastingBloodSugar, int? bloodPressure, int? restingEcg, int? maxHeartRate, double? stDepression, int? slope, double? output}) {
+  PatientData copyWith({int? age, Gender? gender, ChestPain? chestPain, bool? exerciseAngina, double? cholesterol, int? numberOfVessels, Thalassemia? thalassemia, bool? fastingBloodSugar, int? bloodPressure, int? restingEcg, int? maxHeartRate, double? stDepression, int? slope, double? output}) {
     return PatientData._internal(
       id: id,
-      timestamp: timestamp ?? this.timestamp,
+      timestamp: timestamp,
       age: age ?? this.age,
       gender: gender ?? this.gender,
       chestPain: chestPain ?? this.chestPain,
@@ -235,7 +245,6 @@ class PatientData extends amplify_core.Model {
   }
   
   PatientData copyWithModelFieldValues({
-    ModelFieldValue<amplify_core.TemporalDateTime>? timestamp,
     ModelFieldValue<int?>? age,
     ModelFieldValue<Gender?>? gender,
     ModelFieldValue<ChestPain?>? chestPain,
@@ -253,7 +262,7 @@ class PatientData extends amplify_core.Model {
   }) {
     return PatientData._internal(
       id: id,
-      timestamp: timestamp == null ? this.timestamp : timestamp.value,
+      timestamp: timestamp,
       age: age == null ? this.age : age.value,
       gender: gender == null ? this.gender : gender.value,
       chestPain: chestPain == null ? this.chestPain : chestPain.value,
@@ -346,6 +355,10 @@ class PatientData extends amplify_core.Model {
           amplify_core.ModelOperation.UPDATE,
           amplify_core.ModelOperation.DELETE
         ])
+    ];
+    
+    modelSchemaDefinition.indexes = [
+      amplify_core.ModelIndex(fields: const ["id", "timestamp"], name: null)
     ];
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.id());
@@ -476,14 +489,20 @@ class _PatientDataModelType extends amplify_core.ModelType<PatientData> {
  */
 class PatientDataModelIdentifier implements amplify_core.ModelIdentifier<PatientData> {
   final String id;
+  final amplify_core.TemporalDateTime timestamp;
 
-  /** Create an instance of PatientDataModelIdentifier using [id] the primary key. */
+  /**
+   * Create an instance of PatientDataModelIdentifier using [id] the primary key.
+   * And [timestamp] the sort key.
+   */
   const PatientDataModelIdentifier({
-    required this.id});
+    required this.id,
+    required this.timestamp});
   
   @override
   Map<String, dynamic> serializeAsMap() => (<String, dynamic>{
-    'id': id
+    'id': id,
+    'timestamp': timestamp
   });
   
   @override
@@ -496,7 +515,7 @@ class PatientDataModelIdentifier implements amplify_core.ModelIdentifier<Patient
   String serializeAsString() => serializeAsMap().values.join('#');
   
   @override
-  String toString() => 'PatientDataModelIdentifier(id: $id)';
+  String toString() => 'PatientDataModelIdentifier(id: $id, timestamp: $timestamp)';
   
   @override
   bool operator ==(Object other) {
@@ -505,10 +524,12 @@ class PatientDataModelIdentifier implements amplify_core.ModelIdentifier<Patient
     }
     
     return other is PatientDataModelIdentifier &&
-      id == other.id;
+      id == other.id &&
+      timestamp == other.timestamp;
   }
   
   @override
   int get hashCode =>
-    id.hashCode;
+    id.hashCode ^
+    timestamp.hashCode;
 }

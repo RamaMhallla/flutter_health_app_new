@@ -1,6 +1,6 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_health_app_new/patientDashboard.dart';
+import 'package:flutter_health_app_new/patientInputDashboard.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
 import 'package:flutter_health_app_new/screen/login_screen.dart';
 
@@ -43,7 +43,7 @@ class _RootState extends State<Root> {
     
     return Scaffold(
       body: _authStatus == AuthStatus.loggedIn
-          ? const PatientDashboard()
+          ? const PatientInputDashboard()
           : const LoginScreen(),
     );
   }

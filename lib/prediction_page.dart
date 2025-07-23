@@ -2,6 +2,7 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_health_app_new/models/ModelProvider.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
@@ -20,13 +21,11 @@ class AppColor {
 
 class PredictionPage extends StatefulWidget {
   final Map<String,double> inputFeatures;
-  final String name;
   final Gender gender;
 
   const PredictionPage({
     super.key,
     required this.inputFeatures,
-    required this.name,
     required this.gender,
   });
 
@@ -143,8 +142,9 @@ List<double> normalize(Map<String, double> input) {
         predictionValue = prediction;
         result = prediction > 0.5 ? 'High Risk Detected' : 'Low Risk (Normal)';
         _isLoading = false;
-
       });
+
+    
     } catch (e) {
       setState(() {
         result = 'Error: ${e.toString()}';
@@ -277,12 +277,20 @@ List<double> normalize(Map<String, double> input) {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildInfoRow(Icons.person, 'Name:', widget.name),
-                _buildInfoRow(Icons.cake, 'Age:', widget.inputFeatures['age'].toString()),
+                _buildInfoRow(
+                  Icons.person,
+                  'Name:',
+                  Provider.of<UserProvider>(context, listen: false).userEmail,
+                ),
+                _buildInfoRow(
+                  Icons.cake,
+                  'Age:',
+                  widget.inputFeatures['age']!.toInt().toString(),
+                ),
                 _buildInfoRow(
                   Icons.wc,
                   'Gender:',
-                  widget.gender.toString().capitalized,
+                  widget.gender.toString().split('.')[1].capitalized,
                 ),
                 const Divider(height: 32, thickness: 1),
                 Text(
@@ -297,26 +305,52 @@ List<double> normalize(Map<String, double> input) {
                 Center(child: _buildResultIndicator()),
                 const SizedBox(height: 24),
                 if (!_isLoading)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                    onPressed: () => memorize(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.primaryBlue,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  Column(
+                    children: [
+                       SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => memorize(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.success,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Memorize',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.primaryBlue,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Return to Dashboard',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'Return to Dashboard',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+
+                    ],
                   ),
               ],
             ),
@@ -328,10 +362,9 @@ List<double> normalize(Map<String, double> input) {
   
 Future<void>  memorize() async{
   try {
-  
     final newPatientRecord = PatientData( 
-      id: UserProvider().userEmail,
-      timestamp: TemporalDateTime.now(),
+      id: Provider.of<UserProvider>(context, listen: false).userEmail,
+      timestamp: TemporalDateTime.new(DateTime.now().toLocal()), //the problem is the emulator you need to change the timezone in setting of android
       age: widget.inputFeatures['age']!.toInt(),
       gender: widget.gender,
       chestPain: chestPainLabels.keys.elementAt(widget.inputFeatures['chestPain']!.toInt()),   
@@ -340,7 +373,7 @@ Future<void>  memorize() async{
       numberOfVessels: widget.inputFeatures['numberOfVessels']!.toInt(),
       thalassemia: thalassemiaLabels.keys.elementAt(widget.inputFeatures['thalassemia']!.toInt()),
       fastingBloodSugar:  widget.inputFeatures['fastingBloodSugar']==1.0 ? true:false,
-      bloodPressure:  widget.inputFeatures['bloodPressure']!.toInt(),
+      bloodPressure:  widget.inputFeatures['blood Pressure']!.toInt(),
       restingEcg: widget.inputFeatures['restingEcg']!.toInt(), 
       maxHeartRate:  widget.inputFeatures['maxHeartRate']!.toInt(),
       stDepression:  widget.inputFeatures['stDepression'],

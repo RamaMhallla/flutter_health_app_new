@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_health_app_new/patientDashboard.dart';
+import 'package:flutter_health_app_new/patientInputDashboard.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
 import 'package:flutter_health_app_new/screen/signUp_screen.dart';
 
@@ -50,7 +50,8 @@ class _LoginScreenState extends State<LoginScreen> {
           username: _emailController.text.trim(),
           password: _passwordController.text,
         );
-
+        final user = await Amplify.Auth.getCurrentUser();
+        final id= user.userId;
         if (result.isSignedIn && mounted) {
           Provider.of<UserProvider>(
             context,
@@ -58,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ).login(_rememberMe,_emailController.text.trim());
           Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const PatientDashboard()),
+              MaterialPageRoute(builder: (_) => const PatientInputDashboard()),
            );
           
 

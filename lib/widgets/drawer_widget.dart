@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:flutter_health_app_new/patientDashboard.dart';
+import 'package:flutter_health_app_new/patientInputDashboard.dart';
+import 'package:flutter_health_app_new/screen/medicalHistoryScreen.dart';
 import 'package:flutter_health_app_new/screen/login_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -85,8 +86,16 @@ class DrawerWidget extends StatelessWidget {
                     ),
                     _buildMenuItem(
                       icon: Icons.analytics,
-                      title: "Heart Health Analysis",
-                      onTap: () => Navigator.pop(context),
+                      title: "Heart Health Analysis",       
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PatientInputDashboard(),
+                          ),
+                        );
+                      }, 
                     ),
                     _buildMenuItem(
                       icon: Icons.history,
@@ -96,7 +105,7 @@ class DrawerWidget extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const PatientDashboard(),
+                            builder: (context) => const PatientMedicalHistoryScreen(),
                           ),
                         );
                       },

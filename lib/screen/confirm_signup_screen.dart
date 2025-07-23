@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:flutter_health_app_new/patientDashboard.dart';
+import 'package:flutter_health_app_new/patientInputDashboard.dart';
 
 
 class ConfirmSignUpScreen extends StatefulWidget {
@@ -34,7 +34,7 @@ class _ConfirmSignUpScreenState extends State<ConfirmSignUpScreen> {
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const PatientDashboard()),
+          MaterialPageRoute(builder: (context) => const PatientInputDashboard()),
         );
       } else {
         // Shouldn’t happen usually
