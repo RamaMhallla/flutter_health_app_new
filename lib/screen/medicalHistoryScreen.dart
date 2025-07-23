@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter_health_app_new/models/PatientData.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
+import 'package:flutter_health_app_new/utility/MyCostants.dart';
+import 'package:flutter_health_app_new/widgets/drawer_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -52,7 +54,10 @@ class _PatientMedicalHistoryScreenState extends State<PatientMedicalHistoryScree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Medical History Dashboard")),
+      drawer: const DrawerWidget(),
+      appBar: AppBar(title: Text("Medical History Dashboard", style: TextStyle(  fontWeight: FontWeight.bold,
+            letterSpacing: 1.1,color: MyCostants.secondary),), backgroundColor: MyCostants.primary,),
+      backgroundColor: MyCostants.background,
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : results.isEmpty
@@ -63,6 +68,7 @@ class _PatientMedicalHistoryScreenState extends State<PatientMedicalHistoryScree
                   itemBuilder: (context, index) {
                     final patient = results[index];
                     return Card(
+                      color: MyCostants.secondary,
                       margin: EdgeInsets.symmetric(vertical: 8),
                       elevation: 3,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -101,8 +107,8 @@ class _PatientMedicalHistoryScreenState extends State<PatientMedicalHistoryScree
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
-          Text(value ?? "N/A"),
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold,color: MyCostants.textPrimary)),
+          Text(value ?? "N/A", style: TextStyle(color:MyCostants.textSubtitle)),
         ],
       ),
     );

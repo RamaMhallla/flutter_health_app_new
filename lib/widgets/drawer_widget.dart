@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:flutter_health_app_new/patientInputDashboard.dart';
+import 'package:flutter_health_app_new/screen/patientInputScreen.dart';
 import 'package:flutter_health_app_new/screen/medicalHistoryScreen.dart';
 import 'package:flutter_health_app_new/screen/login_screen.dart';
+import 'package:flutter_health_app_new/utility/MyCostants.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/user_provider.dart';
@@ -15,7 +16,7 @@ class DrawerWidget extends StatelessWidget {
     final userProvider = Provider.of<UserProvider>(context);
 
     return Drawer(
-      backgroundColor: const Color(0xFFE6F2F5),
+      backgroundColor: MyCostants.background2,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -26,14 +27,14 @@ class DrawerWidget extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF003366).withValues(alpha:0.1),
+                  color: MyCostants.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 36,
-                      backgroundColor: const Color(0xFF5B8FB9),
+                      backgroundColor: MyCostants.primary,
                       child: Image.asset(
                         "assets/images/profile.png",
                         width: 64,
@@ -50,7 +51,7 @@ class DrawerWidget extends StatelessWidget {
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
-                              color: Color(0xFF003366),
+                              color: MyCostants.secondary,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -62,7 +63,7 @@ class DrawerWidget extends StatelessWidget {
                                 : "patient@email.com",
                             style: const TextStyle(
                               fontSize: 14,
-                              color: Color(0xFF7F8C8D),
+                              color: MyCostants.background2,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -125,7 +126,7 @@ class DrawerWidget extends StatelessWidget {
               _buildMenuItem(
                 icon: Icons.logout,
                 title: "Logout",
-                color: const Color(0xFFE53935),
+                color: MyCostants.error,
                 onTap: () async {
                   final confirm = await showDialog<bool>(
                     context: context,
@@ -141,7 +142,7 @@ class DrawerWidget extends StatelessWidget {
                           onPressed: () => Navigator.pop(context, true),
                           child: const Text(
                             "Logout",
-                            style: TextStyle(color: Colors.red),
+                            style: TextStyle(color: MyCostants.error),
                           ),
                         ),
                       ],
@@ -169,7 +170,7 @@ class DrawerWidget extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text("Logout failed: ${e.message}"),
-                            backgroundColor: Colors.red,
+                            backgroundColor: MyCostants.error,
                           ),
                         );
                       }
@@ -188,7 +189,7 @@ class DrawerWidget extends StatelessWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    Color color = const Color(0xFF003366),
+    Color color = MyCostants.inEvidence,
   }) {
     return ListTile(
       leading: Icon(icon, color: color),

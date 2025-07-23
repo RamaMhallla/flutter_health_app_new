@@ -3,27 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_health_app_new/models/ChestPain.dart';
 import 'package:flutter_health_app_new/models/Gender.dart';
 import 'package:flutter_health_app_new/models/Thalassemia.dart';
+import 'package:flutter_health_app_new/utility/MyCostants.dart';
 import 'package:flutter_health_app_new/widgets/drawer_widget.dart';
-import 'prediction_page.dart';
+import 'predictionScreen.dart';
 import 'dart:convert';
 import 'dart:async';
-import 'services/mqtt_service.dart';
+import '../services/mqtt_service.dart';
 
-class AppColor {
-  // Primary colors
-  static const primaryBlue = Color(0xFF5B8FB9);
-  static const lightBlue = Color(0xFFB6D0E2);
-  static const darkBlue = Color.fromARGB(255, 7, 72, 137);
-
-  // Status colors
-  static const success = Color(0xFF4CAF50);
-  static const warning = Color(0xFFFFA000);
-  static const error = Color(0xFFE53935);
-
-  // Text colors
-  static const textPrimary = Color(0xFF2C3E50);
-  static const textSecondary = Color(0xFF7F8C8D);
-}
 
 class PatientInputDashboard extends StatefulWidget {
   const PatientInputDashboard({super.key});
@@ -313,7 +299,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: AppColor.primaryBlue.withValues(alpha: 0.3),
+                color: MyCostants.primary.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -323,7 +309,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
               Icon(
                 Icons.edit_attributes,
                 size: 20,
-                color: AppColor.primaryBlue,
+                color: MyCostants.primary,
               ),
               SizedBox(width: 8),
               Text(
@@ -331,7 +317,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColor.darkBlue,
+                  color: MyCostants.inEvidence,
                 ),
               ),
             ],
@@ -392,7 +378,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
-          color: AppColor.primaryBlue.withValues(alpha: 0.2),
+          color: MyCostants.primary.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -403,7 +389,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           children: [
             Row(
               children: [
-                Icon(icon, size: 18, color: AppColor.primaryBlue),
+                Icon(icon, size: 18, color: MyCostants.primary),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -411,7 +397,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: AppColor.textPrimary,
+                      color: MyCostants.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -428,7 +414,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
-                    color: AppColor.primaryBlue.withValues(alpha: 0.5),
+                    color: MyCostants.primary.withValues(alpha: 0.5),
                   ),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
@@ -440,7 +426,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                         unit,
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColor.textSecondary,
+                          color: MyCostants.textSecondary,
                         ),
                       )
                     : null,
@@ -461,7 +447,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           'Age',
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: AppColor.textPrimary,
+            color: MyCostants.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -479,7 +465,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
               width: 60,
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                border: Border.all(color: AppColor.primaryBlue),
+                border: Border.all(color: MyCostants.primary),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -510,7 +496,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           'Gender',
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: AppColor.textPrimary,
+            color: MyCostants.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -525,11 +511,11 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                     _gender =  Gender.MALE;
                   });
                 },
-                selectedColor: AppColor.primaryBlue,
+                selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
                   color: _gender ==  Gender.MALE
                       ? Colors.white
-                      : AppColor.textPrimary,
+                      : MyCostants.textPrimary,
                 ),
               ),
             ),
@@ -543,11 +529,11 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                     _gender =Gender.FEMALE;
                   });
                 },
-                selectedColor: AppColor.primaryBlue,
+                selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
                   color: _gender ==Gender.FEMALE
                       ? Colors.white
-                      : AppColor.textPrimary,
+                      : MyCostants.textPrimary,
                 ),
               ),
             ),
@@ -561,11 +547,11 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                     _gender =Gender.OTHER;
                   });
                 },
-                selectedColor: AppColor.primaryBlue,
+                selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
                   color: _gender ==Gender.OTHER
                       ? Colors.white
-                      : AppColor.textPrimary,
+                      : MyCostants.textPrimary,
                 ),
               ),
             ),
@@ -583,7 +569,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           'Chest Pain Type',
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: AppColor.textPrimary,
+            color: MyCostants.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -592,7 +578,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColor.primaryBlue),
+              borderSide: BorderSide(color: MyCostants.primary),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
@@ -624,7 +610,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           'Exercise Induced Angina',
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: AppColor.textPrimary,
+            color: MyCostants.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -639,9 +625,9 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                     _exerciseAngina = true;
                   });
                 },
-                selectedColor: AppColor.primaryBlue,
+                selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: _exerciseAngina ? Colors.white : AppColor.textPrimary,
+                  color: _exerciseAngina ? Colors.white : MyCostants.textPrimary,
                 ),
               ),
             ),
@@ -655,9 +641,9 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                     _exerciseAngina = false;
                   });
                 },
-                selectedColor: AppColor.primaryBlue,
+                selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: !_exerciseAngina ? Colors.white : AppColor.textPrimary,
+                  color: !_exerciseAngina ? Colors.white : MyCostants.textPrimary,
                 ),
               ),
             ),
@@ -671,7 +657,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColor.warning,
+        backgroundColor: MyCostants.warning,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -741,7 +727,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                 Icon(
                   Icons.medical_services,
                   size: 24,
-                  color: AppColor.darkBlue,
+                  color: MyCostants.inEvidence,
                 ),
                 SizedBox(width: 8),
                 Text(
@@ -749,7 +735,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColor.darkBlue,
+                    color: MyCostants.inEvidence,
                   ),
                 ),
               ],
@@ -804,13 +790,13 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: AppColor.primaryBlue),
+            Icon(icon, size: 20, color: MyCostants.primary),
             const SizedBox(width: 8),
             Text(
               label,
               style: const TextStyle(
                 fontWeight: FontWeight.w500,
-                color: AppColor.textPrimary,
+                color: MyCostants.textPrimary,
               ),
             ),
           ],
@@ -827,12 +813,12 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                   hintText: hint,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColor.primaryBlue),
+                    borderSide: BorderSide(color: MyCostants.primary),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(
-                      color: AppColor.primaryBlue,
+                      color: MyCostants.primary,
                       width: 2,
                     ),
                   ),
@@ -848,14 +834,14 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               decoration: BoxDecoration(
-                color: AppColor.lightBlue,
+                color: MyCostants.background,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColor.primaryBlue),
+                border: Border.all(color: MyCostants.primary),
               ),
               child: Text(
                 unit,
                 style: const TextStyle(
-                  color: AppColor.darkBlue,
+                  color: MyCostants.inEvidence,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -877,13 +863,13 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: AppColor.primaryBlue),
+            Icon(icon, size: 20, color: MyCostants.primary),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color: AppColor.textPrimary,
+                color: MyCostants.textPrimary,
               ),
             ),
           ],
@@ -894,7 +880,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           title: Text(value ? 'Yes' : 'No'),
           value: value,
           onChanged: onChanged,
-          activeColor: AppColor.primaryBlue,
+          activeColor: MyCostants.primary,
         ),
       ],
     );
@@ -906,13 +892,13 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       children: [
         Row(
           children: [
-            Icon(Icons.bloodtype, size: 20, color: AppColor.primaryBlue),
+            Icon(Icons.bloodtype, size: 20, color:MyCostants.primary),
             const SizedBox(width: 8),
             Text(
               'Number of Major Vessels (0-4)',
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color: AppColor.textPrimary,
+                color: MyCostants.textPrimary,
               ),
             ),
           ],
@@ -929,9 +915,9 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                   _vessels = index;
                 });
               },
-              selectedColor: AppColor.primaryBlue,
+              selectedColor: MyCostants.primary,
               labelStyle: TextStyle(
-                color: _vessels == index ? Colors.white : AppColor.textPrimary,
+                color: _vessels == index ? Colors.white : MyCostants.textPrimary,
               ),
             );
           }),
@@ -949,14 +935,14 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
             Icon(
               Icons.health_and_safety,
               size: 20,
-              color: AppColor.primaryBlue,
+              color: MyCostants.primary,
             ),
             const SizedBox(width: 8),
             Text(
               'Thalassemia Type',
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color: AppColor.textPrimary,
+                color: MyCostants.textPrimary,
               ),
             ),
           ],
@@ -967,7 +953,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColor.primaryBlue),
+              borderSide: BorderSide(color: MyCostants.primary),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
@@ -1001,14 +987,14 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           children: [
             Row(
               children: [
-                Icon(Icons.sensors, size: 24, color: AppColor.primaryBlue),
+                Icon(Icons.sensors, size: 24, color: MyCostants.primary),
                 const SizedBox(width: 8),
                 const Text(
                   'Sensor Data',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColor.primaryBlue,
+                    color: MyCostants.primary,
                   ),
                 ),
                 const Spacer(),
@@ -1072,7 +1058,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: _isConnected ? AppColor.success : AppColor.error,
+            color: _isConnected ? MyCostants.success : MyCostants.error,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -1095,8 +1081,8 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
         Switch(
           value: _isConnected,
           onChanged: (value) => setState(() => _isConnected = value),
-          activeColor:AppColor.success, 
-          inactiveThumbColor: AppColor.error,
+          activeColor:MyCostants.success, 
+          inactiveThumbColor: MyCostants.error,
           inactiveTrackColor: const Color.fromARGB(255, 255, 155, 155),
           trackOutlineColor: WidgetStateProperty.all(_isConnected?Color.fromARGB(0, 255, 255, 255) :Color.fromARGB(255, 255, 155, 155)),
         ),
@@ -1112,23 +1098,23 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColor.lightBlue.withValues(alpha: 0.5),
+        color: MyCostants.background.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColor.primaryBlue.withValues(alpha: 0.2)),
+        border: Border.all(color: MyCostants.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: AppColor.primaryBlue),
+              Icon(icon, size: 20, color: MyCostants.primary),
               const SizedBox(width: 6),
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColor.textPrimary,
+                  color: MyCostants.textPrimary,
                 ),
               ),
             ],
@@ -1139,7 +1125,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColor.darkBlue,
+              color: MyCostants.inEvidence,
             ),
           ),
         ],
@@ -1153,7 +1139,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : navigateToPredictionPage,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColor.primaryBlue,
+          backgroundColor: MyCostants.primary,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -1200,14 +1186,14 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           children: [
             const Row(
               children: [
-                Icon(Icons.person_outline, size: 24, color: AppColor.darkBlue),
+                Icon(Icons.person_outline, size: 24, color: MyCostants.inEvidence),
                 SizedBox(width: 8),
                 Text(
                   'Patient Information',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColor.darkBlue,
+                    color: MyCostants.inEvidence,
                   ),
                 ),
               ],
@@ -1229,11 +1215,12 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.lightBlue,
+      backgroundColor: MyCostants.background,
       drawer: const DrawerWidget(),
       appBar: AppBar(
-        title: const Text('Heart Health Monitor'),
-        backgroundColor: AppColor.lightBlue,
+        title: const Text('Heart Health Monitor',style: TextStyle(  fontWeight: FontWeight.bold,
+            letterSpacing: 1.1,color: MyCostants.secondary)), 
+        backgroundColor: MyCostants.primary,
         centerTitle: true,
         elevation: 0,
         actions: [

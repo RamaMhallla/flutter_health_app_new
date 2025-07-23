@@ -2,22 +2,13 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_health_app_new/models/ModelProvider.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
+import 'package:flutter_health_app_new/utility/MyCostants.dart';
 import 'package:provider/provider.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class AppColor {
-  static const primaryBlue = Color(0xFF5B8FB9);
-  static const lightBlue = Color(0xFFB6D0E2);
-  static const darkBlue = Color.fromARGB(255, 7, 72, 137);
-  static const success = Color(0xFF4CAF50);
-  static const warning = Color(0xFFFFA000);
-  static const error = Color(0xFFE53935);
-  static const textPrimary = Color(0xFF2C3E50);
-  static const textSecondary = Color(0xFF7F8C8D);
-}
 
 class PredictionPage extends StatefulWidget {
   final Map<String,double> inputFeatures;
@@ -170,14 +161,14 @@ List<double> normalize(Map<String, double> input) {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, size: 22, color: AppColor.primaryBlue),
+          Icon(icon, size: 22, color: MyCostants.primary),
           const SizedBox(width: 12),
           Text(
             label,
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
-              color: AppColor.textPrimary,
+              color: MyCostants.textPrimary,
             ),
           ),
           const SizedBox(width: 8),
@@ -186,7 +177,7 @@ List<double> normalize(Map<String, double> input) {
               value,
               style: TextStyle(
                 fontSize: 16,
-                color: AppColor.darkBlue,
+                color: MyCostants.inEvidence,
                 fontWeight: FontWeight.bold,
               ),
               overflow: TextOverflow.ellipsis,
@@ -200,7 +191,7 @@ List<double> normalize(Map<String, double> input) {
   Widget _buildResultIndicator() {
     if (_isLoading) {
       return const CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(AppColor.primaryBlue),
+        valueColor: AlwaysStoppedAnimation<Color>(MyCostants.primary),
       );
     }
     final isHighRisk = result.contains('High');
@@ -208,11 +199,11 @@ List<double> normalize(Map<String, double> input) {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isHighRisk
-            ? AppColor.error.withValues(alpha: 0.1)
-            : AppColor.success.withValues(alpha: 0.1),
+            ? MyCostants.error.withValues(alpha: 0.1)
+            : MyCostants.success.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isHighRisk ? AppColor.error : AppColor.success,
+          color: isHighRisk ? MyCostants.error : MyCostants.success,
           width: 2,
         ),
       ),
@@ -221,7 +212,7 @@ List<double> normalize(Map<String, double> input) {
           Icon(
             isHighRisk ? Icons.warning : Icons.check_circle,
             size: 48,
-            color: isHighRisk ? AppColor.error : AppColor.success,
+            color: isHighRisk ? MyCostants.error : MyCostants.success,
           ),
           const SizedBox(height: 12),
           Text(
@@ -229,7 +220,7 @@ List<double> normalize(Map<String, double> input) {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: isHighRisk ? AppColor.error : AppColor.success,
+              color: isHighRisk ? MyCostants.error : MyCostants.success,
             ),
             textAlign: TextAlign.center,
           ),
@@ -238,7 +229,7 @@ List<double> normalize(Map<String, double> input) {
             isHighRisk
                 ? 'Please consult a doctor immediately'
                 : 'Your heart health appears normal',
-            style: TextStyle(fontSize: 16, color: AppColor.lightBlue),
+            style: TextStyle(fontSize: 16, color: MyCostants.textPrimary),
             textAlign: TextAlign.center,
           ),
         ],
@@ -249,10 +240,11 @@ List<double> normalize(Map<String, double> input) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.lightBlue,
+      backgroundColor: MyCostants.background,
       appBar: AppBar(
-        title: const Text('Heart Risk Prediction'),
-        backgroundColor: AppColor.lightBlue,
+        title: const Text('Heart Risk Prediction',style: TextStyle(  fontWeight: FontWeight.bold,
+            letterSpacing: 1.1,color: MyCostants.secondary)), 
+        backgroundColor: MyCostants.primary,
         centerTitle: true,
         elevation: 0,
       ),
@@ -273,7 +265,7 @@ List<double> normalize(Map<String, double> input) {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColor.darkBlue,
+                    color: MyCostants.inEvidence,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -298,7 +290,7 @@ List<double> normalize(Map<String, double> input) {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColor.darkBlue,
+                    color: MyCostants.inEvidence,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -312,7 +304,7 @@ List<double> normalize(Map<String, double> input) {
                         child: ElevatedButton(
                           onPressed: () => memorize(),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.success,
+                            backgroundColor: MyCostants.success,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -323,7 +315,7 @@ List<double> normalize(Map<String, double> input) {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: MyCostants.secondary,
                             ),
                           ),
                         ),
@@ -333,7 +325,7 @@ List<double> normalize(Map<String, double> input) {
                         child: ElevatedButton(
                           onPressed: () => Navigator.pop(context),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.primaryBlue,
+                            backgroundColor: MyCostants.primary,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -344,7 +336,7 @@ List<double> normalize(Map<String, double> input) {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: MyCostants.secondary,
                             ),
                           ),
                         ),

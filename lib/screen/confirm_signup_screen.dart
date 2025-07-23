@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:flutter_health_app_new/patientInputDashboard.dart';
+import 'package:flutter_health_app_new/screen/patientInputScreen.dart';
 
 
 class ConfirmSignUpScreen extends StatefulWidget {

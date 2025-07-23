@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter_health_app_new/screen/confirm_signup_screen.dart';
 import 'package:flutter_health_app_new/screen/login_screen.dart';
+import 'package:flutter_health_app_new/utility/MyCostants.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -74,7 +75,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Signup failed: ${e.message}'),
-              backgroundColor: Colors.red,
+              backgroundColor: MyCostants.error,
             ),
           );
         }
@@ -98,16 +99,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F2F5),
+      backgroundColor: MyCostants.background2,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF5B8FB9),
+        backgroundColor: MyCostants.primary,
         centerTitle: true,
         title: const Text(
           'Sign Up',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1.1,
-            color: Colors.white,
+            color: MyCostants.secondary,
           ),
         ),
         elevation: 2,
@@ -151,7 +152,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF003366),
+                      color: MyCostants.inEvidence,
                     ),
                   ),
                 ],
@@ -189,7 +190,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF003366),
+                color: MyCostants.inEvidence,
               ),
             ),
             const SizedBox(height: 40),
@@ -306,8 +307,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _signUp,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5B8FB9),
-                foregroundColor: Colors.white,
+                backgroundColor: MyCostants.primary,
+                foregroundColor: MyCostants.secondary,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -320,7 +321,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: MyCostants.secondary,
                       ),
                     )
                   : const Text(
@@ -328,7 +329,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
-                        color: Colors.white,
+                        color: MyCostants.secondary,
                       ),
                     ),
             ),
