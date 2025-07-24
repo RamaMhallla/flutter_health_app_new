@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:flutter_health_app_new/screen/patientInputScreen.dart';
-import 'package:flutter_health_app_new/screen/medicalHistoryScreen.dart';
+import 'package:flutter_health_app_new/screen/patientInput_screen.dart';
+import 'package:flutter_health_app_new/screen/medicalHistory_screen.dart';
 import 'package:flutter_health_app_new/screen/login_screen.dart';
+import 'package:flutter_health_app_new/screen/xrayAnalysis_screen.dart';
 import 'package:flutter_health_app_new/utility/MyCostants.dart';
 import 'package:provider/provider.dart';
 
@@ -83,7 +84,15 @@ class DrawerWidget extends StatelessWidget {
                     _buildMenuItem(
                       icon: Icons.medical_information,
                       title: "X-Ray Analysis",
-                      onTap: () => Navigator.pop(context),
+                      onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const XRayAnalysisScreen(),
+                            ),
+                          );
+                      }, 
                     ),
                     _buildMenuItem(
                       icon: Icons.analytics,
@@ -111,11 +120,11 @@ class DrawerWidget extends StatelessWidget {
                         );
                       },
                     ),
-                    _buildMenuItem(
+                    /*_buildMenuItem(
                       icon: Icons.settings,
                       title: "Settings",
                       onTap: () => Navigator.pop(context),
-                    ),
+                    ),*/
                   ],
                 ),
               ),
@@ -139,7 +148,12 @@ class DrawerWidget extends StatelessWidget {
                           child: const Text("Cancel"),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.pop(context, true),
+                          onPressed: () => {Navigator.pop(context, true),   Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                        )},
                           child: const Text(
                             "Logout",
                             style: TextStyle(color: MyCostants.error),

@@ -56,7 +56,7 @@ class _PatientMedicalHistoryScreenState extends State<PatientMedicalHistoryScree
     return Scaffold(
       drawer: const DrawerWidget(),
       appBar: AppBar(title: Text("Medical History Dashboard", style: TextStyle(  fontWeight: FontWeight.bold,
-            letterSpacing: 1.1,color: MyCostants.secondary),), backgroundColor: MyCostants.primary,),
+            letterSpacing: 1.1,color: MyCostants.secondary),),centerTitle: true,  elevation: 2, backgroundColor: MyCostants.primary,),
       backgroundColor: MyCostants.background,
       body: isLoading
           ? Center(child: CircularProgressIndicator())

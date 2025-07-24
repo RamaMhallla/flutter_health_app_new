@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_health_app_new/screen/patientInputScreen.dart';
+import 'package:flutter_health_app_new/screen/forgetPassword_screen.dart';
+import 'package:flutter_health_app_new/screen/patientInput_screen.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
 import 'package:flutter_health_app_new/screen/signUp_screen.dart';
 import 'package:flutter_health_app_new/utility/MyCostants.dart';
@@ -104,11 +105,20 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (_) => AlertDialog(
         title: const Text('Forgot Password'),
         content: const Text(
-          'Password reset functionality will be implemented.',
+          'Do you sure to reset the password?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => {Navigator.pop(context),Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ForgotPasswordScreen(),
+                          ),
+                        )},
             child: const Text('OK'),
           ),
         ],
@@ -121,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor:  MyCostants.background2,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: MyCostants.primary,
         centerTitle: true,
         title: const Text(

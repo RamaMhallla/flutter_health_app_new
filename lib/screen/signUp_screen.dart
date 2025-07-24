@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:flutter_health_app_new/screen/confirm_signup_screen.dart';
+import 'package:flutter_health_app_new/screen/confirmSignup_screen.dart';
 import 'package:flutter_health_app_new/screen/login_screen.dart';
 import 'package:flutter_health_app_new/utility/MyCostants.dart';
 

@@ -246,7 +246,7 @@ List<double> normalize(Map<String, double> input) {
             letterSpacing: 1.1,color: MyCostants.secondary)), 
         backgroundColor: MyCostants.primary,
         centerTitle: true,
-        elevation: 0,
+        elevation: 2,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
