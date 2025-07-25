@@ -42,5 +42,5 @@ Located in: `Detecting Pneumonia using Chest X-Ray/xray_model_training.ipynb`
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/RamaMhallla/cloud-project.git
+   git clone  https://github.com/RamaMhallla/flutter_health_app_new.git
    ```
