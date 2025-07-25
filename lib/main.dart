@@ -28,7 +28,17 @@ Future<void> _configureAmplify() async {
       // AmplifyAnalyticsPinpoint(),
     ]);
     await Amplify.configure(amplifyconfig);
+Future<void> clearDataStore() async {
+  try {
+    await Amplify.DataStore.clear();
+    safePrint('DataStore cleared successfully');
+  } catch (e) {
+    safePrint('Error clearing DataStore: $e');
+  }
+}
 
+// Call this before your memorize() method or in your app initialization
+await clearDataStore();
 
     safePrint("Amplify configured successfully.");
   } on AmplifyAlreadyConfiguredException {

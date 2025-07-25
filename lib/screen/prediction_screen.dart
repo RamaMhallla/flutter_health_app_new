@@ -131,7 +131,7 @@ class _PredictionPageState extends State<PredictionPage> {
             prediction = decoded['prediction']?.toDouble() ?? 0.0;
 
             print("✅ Prediction from AWS: $prediction");
-            source = "(AWS)";
+            source = "AWS";
           } else {
             throw Exception(
               "AWS Error: ${response.statusCode} - ${response.body}",
@@ -143,7 +143,7 @@ class _PredictionPageState extends State<PredictionPage> {
       } catch (e) {
         print("⚠️❌ API request failed, fallback to local model: $e");
         prediction = await runLocalModel(normalizedInput);
-        source = "(Local)";
+        source = "Local";
       }
 
       setState(() {
@@ -231,7 +231,7 @@ class _PredictionPageState extends State<PredictionPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            "$result\n(${(predictionValue * 100).toStringAsFixed(2)}%) $source",
+            "$result\n(${(predictionValue * 100).toStringAsFixed(2)}%) ($source)",
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -402,6 +402,7 @@ class _PredictionPageState extends State<PredictionPage> {
         stDepression: widget.inputFeatures['stDepression'],
         slope: widget.inputFeatures['slope']!.toInt(),
         output: predictionValue,
+        model: source,
       );
       await Amplify.DataStore.save(newPatientRecord);
       safePrint('Patient data saved successfully to DynamoDB via DataStore!');

@@ -42,6 +42,7 @@ class PatientData extends amplify_core.Model {
   final double? _stDepression;
   final int? _slope;
   final double? _output;
+  final String? _model;
   final amplify_core.TemporalDateTime? _createdAt;
   final amplify_core.TemporalDateTime? _updatedAt;
 
@@ -137,6 +138,10 @@ class PatientData extends amplify_core.Model {
     return _output;
   }
   
+  String? get model {
+    return _model;
+  }
+  
   amplify_core.TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -145,9 +150,9 @@ class PatientData extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const PatientData._internal({required this.id, required timestamp, age, gender, chestPain, exerciseAngina, cholesterol, numberOfVessels, thalassemia, fastingBloodSugar, bloodPressure, restingEcg, maxHeartRate, stDepression, slope, output, createdAt, updatedAt}): _timestamp = timestamp, _age = age, _gender = gender, _chestPain = chestPain, _exerciseAngina = exerciseAngina, _cholesterol = cholesterol, _numberOfVessels = numberOfVessels, _thalassemia = thalassemia, _fastingBloodSugar = fastingBloodSugar, _bloodPressure = bloodPressure, _restingEcg = restingEcg, _maxHeartRate = maxHeartRate, _stDepression = stDepression, _slope = slope, _output = output, _createdAt = createdAt, _updatedAt = updatedAt;
+  const PatientData._internal({required this.id, required timestamp, age, gender, chestPain, exerciseAngina, cholesterol, numberOfVessels, thalassemia, fastingBloodSugar, bloodPressure, restingEcg, maxHeartRate, stDepression, slope, output, model, createdAt, updatedAt}): _timestamp = timestamp, _age = age, _gender = gender, _chestPain = chestPain, _exerciseAngina = exerciseAngina, _cholesterol = cholesterol, _numberOfVessels = numberOfVessels, _thalassemia = thalassemia, _fastingBloodSugar = fastingBloodSugar, _bloodPressure = bloodPressure, _restingEcg = restingEcg, _maxHeartRate = maxHeartRate, _stDepression = stDepression, _slope = slope, _output = output, _model = model, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory PatientData({String? id, required amplify_core.TemporalDateTime timestamp, int? age, Gender? gender, ChestPain? chestPain, bool? exerciseAngina, double? cholesterol, int? numberOfVessels, Thalassemia? thalassemia, bool? fastingBloodSugar, int? bloodPressure, int? restingEcg, int? maxHeartRate, double? stDepression, int? slope, double? output}) {
+  factory PatientData({String? id, required amplify_core.TemporalDateTime timestamp, int? age, Gender? gender, ChestPain? chestPain, bool? exerciseAngina, double? cholesterol, int? numberOfVessels, Thalassemia? thalassemia, bool? fastingBloodSugar, int? bloodPressure, int? restingEcg, int? maxHeartRate, double? stDepression, int? slope, double? output, String? model}) {
     return PatientData._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       timestamp: timestamp,
@@ -164,7 +169,8 @@ class PatientData extends amplify_core.Model {
       maxHeartRate: maxHeartRate,
       stDepression: stDepression,
       slope: slope,
-      output: output);
+      output: output,
+      model: model);
   }
   
   bool equals(Object other) {
@@ -190,7 +196,8 @@ class PatientData extends amplify_core.Model {
       _maxHeartRate == other._maxHeartRate &&
       _stDepression == other._stDepression &&
       _slope == other._slope &&
-      _output == other._output;
+      _output == other._output &&
+      _model == other._model;
   }
   
   @override
@@ -217,6 +224,7 @@ class PatientData extends amplify_core.Model {
     buffer.write("stDepression=" + (_stDepression != null ? _stDepression!.toString() : "null") + ", ");
     buffer.write("slope=" + (_slope != null ? _slope!.toString() : "null") + ", ");
     buffer.write("output=" + (_output != null ? _output!.toString() : "null") + ", ");
+    buffer.write("model=" + "$_model" + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
     buffer.write("}");
@@ -224,7 +232,7 @@ class PatientData extends amplify_core.Model {
     return buffer.toString();
   }
   
-  PatientData copyWith({int? age, Gender? gender, ChestPain? chestPain, bool? exerciseAngina, double? cholesterol, int? numberOfVessels, Thalassemia? thalassemia, bool? fastingBloodSugar, int? bloodPressure, int? restingEcg, int? maxHeartRate, double? stDepression, int? slope, double? output}) {
+  PatientData copyWith({int? age, Gender? gender, ChestPain? chestPain, bool? exerciseAngina, double? cholesterol, int? numberOfVessels, Thalassemia? thalassemia, bool? fastingBloodSugar, int? bloodPressure, int? restingEcg, int? maxHeartRate, double? stDepression, int? slope, double? output, String? model}) {
     return PatientData._internal(
       id: id,
       timestamp: timestamp,
@@ -241,7 +249,8 @@ class PatientData extends amplify_core.Model {
       maxHeartRate: maxHeartRate ?? this.maxHeartRate,
       stDepression: stDepression ?? this.stDepression,
       slope: slope ?? this.slope,
-      output: output ?? this.output);
+      output: output ?? this.output,
+      model: model ?? this.model);
   }
   
   PatientData copyWithModelFieldValues({
@@ -258,7 +267,8 @@ class PatientData extends amplify_core.Model {
     ModelFieldValue<int?>? maxHeartRate,
     ModelFieldValue<double?>? stDepression,
     ModelFieldValue<int?>? slope,
-    ModelFieldValue<double?>? output
+    ModelFieldValue<double?>? output,
+    ModelFieldValue<String?>? model
   }) {
     return PatientData._internal(
       id: id,
@@ -276,7 +286,8 @@ class PatientData extends amplify_core.Model {
       maxHeartRate: maxHeartRate == null ? this.maxHeartRate : maxHeartRate.value,
       stDepression: stDepression == null ? this.stDepression : stDepression.value,
       slope: slope == null ? this.slope : slope.value,
-      output: output == null ? this.output : output.value
+      output: output == null ? this.output : output.value,
+      model: model == null ? this.model : model.value
     );
   }
   
@@ -297,11 +308,12 @@ class PatientData extends amplify_core.Model {
       _stDepression = (json['stDepression'] as num?)?.toDouble(),
       _slope = (json['slope'] as num?)?.toInt(),
       _output = (json['output'] as num?)?.toDouble(),
+      _model = json['model'],
       _createdAt = json['createdAt'] != null ? amplify_core.TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'timestamp': _timestamp?.format(), 'age': _age, 'gender': amplify_core.enumToString(_gender), 'chestPain': amplify_core.enumToString(_chestPain), 'exerciseAngina': _exerciseAngina, 'cholesterol': _cholesterol, 'numberOfVessels': _numberOfVessels, 'thalassemia': amplify_core.enumToString(_thalassemia), 'fastingBloodSugar': _fastingBloodSugar, 'bloodPressure': _bloodPressure, 'restingEcg': _restingEcg, 'maxHeartRate': _maxHeartRate, 'stDepression': _stDepression, 'slope': _slope, 'output': _output, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'timestamp': _timestamp?.format(), 'age': _age, 'gender': amplify_core.enumToString(_gender), 'chestPain': amplify_core.enumToString(_chestPain), 'exerciseAngina': _exerciseAngina, 'cholesterol': _cholesterol, 'numberOfVessels': _numberOfVessels, 'thalassemia': amplify_core.enumToString(_thalassemia), 'fastingBloodSugar': _fastingBloodSugar, 'bloodPressure': _bloodPressure, 'restingEcg': _restingEcg, 'maxHeartRate': _maxHeartRate, 'stDepression': _stDepression, 'slope': _slope, 'output': _output, 'model': _model, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
   
   Map<String, Object?> toMap() => {
@@ -321,6 +333,7 @@ class PatientData extends amplify_core.Model {
     'stDepression': _stDepression,
     'slope': _slope,
     'output': _output,
+    'model': _model,
     'createdAt': _createdAt,
     'updatedAt': _updatedAt
   };
@@ -342,6 +355,7 @@ class PatientData extends amplify_core.Model {
   static final STDEPRESSION = amplify_core.QueryField(fieldName: "stDepression");
   static final SLOPE = amplify_core.QueryField(fieldName: "slope");
   static final OUTPUT = amplify_core.QueryField(fieldName: "output");
+  static final MODEL = amplify_core.QueryField(fieldName: "model");
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "PatientData";
     modelSchemaDefinition.pluralName = "PatientData";
@@ -451,6 +465,12 @@ class PatientData extends amplify_core.Model {
       key: PatientData.OUTPUT,
       isRequired: false,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.double)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: PatientData.MODEL,
+      isRequired: false,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.nonQueryField(

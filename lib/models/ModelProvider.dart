@@ -29,7 +29,7 @@ export 'Thalassemia.dart';
 
 class ModelProvider implements amplify_core.ModelProviderInterface {
   @override
-  String version = "9b071d3774f6817c154883f390f446df";
+  String version = "78326d8473231be9ccdccd21620bf027";
   @override
   List<amplify_core.ModelSchema> modelSchemas = [PatientData.schema];
   @override

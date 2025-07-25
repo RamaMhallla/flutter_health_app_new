@@ -92,6 +92,7 @@ class _PatientMedicalHistoryScreenState extends State<PatientMedicalHistoryScree
                             _infoRow("ST Depression", patient.stDepression?.toStringAsFixed(2)),
                             _infoRow("Slope", patient.slope?.toString()),
                             _infoRow("Output", patient.output?.toStringAsFixed(2)),
+                            _infoRow("Model", patient.model?.toString()),
                           ],
                         ),
                       ),

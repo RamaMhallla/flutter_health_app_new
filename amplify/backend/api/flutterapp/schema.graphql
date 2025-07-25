@@ -36,4 +36,5 @@ type PatientData @model
   stDepression: Float
   slope: Int 
   output: Float
+  model: String
 }
