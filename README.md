@@ -1,4 +1,4 @@
-# 💓 flutter_health_app_new
+# flutter_health_app_new
 
 ## ❤️ Heart Disease & Pneumonia Monitoring System
 
