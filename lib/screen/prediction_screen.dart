@@ -1,7 +1,12 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_health_app_new/models/ChestPain.dart';
+import 'package:flutter_health_app_new/models/Gender.dart';
 import 'package:flutter_health_app_new/models/ModelProvider.dart';
+import 'package:flutter_health_app_new/models/PatientData.dart';
+import 'package:flutter_health_app_new/models/Thalassemia.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
+import 'package:flutter_health_app_new/screen/auth_helpers.dart';
 import 'package:flutter_health_app_new/utility/MyCostants.dart';
 import 'package:provider/provider.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
@@ -9,9 +14,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
 class PredictionPage extends StatefulWidget {
-  final Map<String,double> inputFeatures;
+  final Map<String, double> inputFeatures;
   final Gender gender;
 
   const PredictionPage({
@@ -43,47 +47,48 @@ class _PredictionPageState extends State<PredictionPage> {
     Thalassemia.REVERSIBLE_DEFECT: 'Reversible Defect',
   };
 
-  Map<String,double> mean = {
+  Map<String, double> mean = {
     'age': 54.4628099,
-    'gender':0.65702479,
-    'chestPain':0.991735537,
-    'blood Pressure':130.359504,
-    'cholesterol':246.842975,
-    'fastingBloodSugar':0.128099174,
-    'restingEcg':0.553719008,
-    'maxHeartRate':150.115702,
-    'exerciseAngina':0.314049587,
-    'stDepression':1.01322314,
-    'slope':1.4214876,
-    'numberOfVessels':0.681818182,
-    'thalassemia':2.30165289,
+    'gender': 0.65702479,
+    'chestPain': 0.991735537,
+    'blood Pressure': 130.359504,
+    'cholesterol': 246.842975,
+    'fastingBloodSugar': 0.128099174,
+    'restingEcg': 0.553719008,
+    'maxHeartRate': 150.115702,
+    'exerciseAngina': 0.314049587,
+    'stDepression': 1.01322314,
+    'slope': 1.4214876,
+    'numberOfVessels': 0.681818182,
+    'thalassemia': 2.30165289,
   };
 
-  Map<String,double> scale = {
-    'age':9.18545502,
-    'gender':0.47470329,
-    'chestPain':1.02041855,
+  Map<String, double> scale = {
+    'age': 9.18545502,
+    'gender': 0.47470329,
+    'chestPain': 1.02041855,
     'blood Pressure': 16.79405187,
-    'cholesterol':52.68627062,
-    'fastingBloodSugar':0.3342002,
-    'restingEcg':0.52931287,
-    'maxHeartRate':22.30616788,
-    'exerciseAngina':0.46413623,
-    'stDepression':1.10029614,
-    'slope':0.60646743,
-    'numberOfVessels':0.98857105,
-    'thalassemia':0.59258273,
+    'cholesterol': 52.68627062,
+    'fastingBloodSugar': 0.3342002,
+    'restingEcg': 0.52931287,
+    'maxHeartRate': 22.30616788,
+    'exerciseAngina': 0.46413623,
+    'stDepression': 1.10029614,
+    'slope': 0.60646743,
+    'numberOfVessels': 0.98857105,
+    'thalassemia': 0.59258273,
   };
 
-List<double> normalize(Map<String, double> input) {
-  List<double> ret = [];
+  List<double> normalize(Map<String, double> input) {
+    List<double> ret = [];
 
-  input.forEach((key, value) {
-    ret.add((value - mean[key]!) / scale[key]!);
-  });
+    input.forEach((key, value) {
+      ret.add((value - mean[key]!) / scale[key]!);
+    });
 
-  return ret;
-}
+    return ret;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -92,39 +97,51 @@ List<double> normalize(Map<String, double> input) {
 
   Future<void> runModel() async {
     try {
-      final connectivityResult = await Connectivity().checkConnectivity();
-      final isOnline = connectivityResult != ConnectivityResult.none;
+      print("🚀 STARTING runModel() function...");
+      print("🔥 input features: ${widget.inputFeatures}");
+
+      List<double> normalizedInput = normalize(widget.inputFeatures);
+      print("📥 Normalized Input: $normalizedInput");
 
       double prediction;
-      List<double> normalizedInput = normalize(widget.inputFeatures);
 
-      if (false) {
-        try {
-          final url = Uri.parse(
-            'https://pj1e33elr0.execute-api.eu-central-1.amazonaws.com/prod/predict',
-          );
+      // Always try calling the API first
+      try {
+        final url = Uri.parse(
+          'https://pj1e33elr0.execute-api.eu-central-1.amazonaws.com/prod/predict',
+        );
 
+        final idToken = await getIdToken();
+        print("🪪 Token: $idToken");
+
+        if (idToken != null) {
           final response = await http.post(
             url,
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $idToken',
+            },
             body: jsonEncode({'features': normalizedInput}),
           );
 
+          print("🔁 Response Body: ${response.body}");
+
           if (response.statusCode == 200) {
-            prediction = jsonDecode(
-              jsonDecode(response.body)['body'],
-            )['prediction'];
+            final decoded = jsonDecode(response.body); // Map<String, dynamic>
+            prediction = decoded['prediction']?.toDouble() ?? 0.0;
+
+            print("✅ Prediction from AWS: $prediction");
             source = "(AWS)";
           } else {
-            throw Exception("AWS Error: ${response.statusCode}");
+            throw Exception(
+              "AWS Error: ${response.statusCode} - ${response.body}",
+            );
           }
-        } catch (e) {
-          print("⚠️ AWS call failed, switching to local model: $e");
-          print("⚠️ AWS call failed, switching to local model: $e");
-          prediction = await runLocalModel(normalizedInput);
-          source = "(Local)";
+        } else {
+          throw Exception("🛑 Token is null");
         }
-      } else {
+      } catch (e) {
+        print("⚠️❌ API request failed, fallback to local model: $e");
         prediction = await runLocalModel(normalizedInput);
         source = "(Local)";
       }
@@ -134,8 +151,6 @@ List<double> normalize(Map<String, double> input) {
         result = prediction > 0.5 ? 'High Risk Detected' : 'Low Risk (Normal)';
         _isLoading = false;
       });
-
-    
     } catch (e) {
       setState(() {
         result = 'Error: ${e.toString()}';
@@ -242,8 +257,14 @@ List<double> normalize(Map<String, double> input) {
     return Scaffold(
       backgroundColor: MyCostants.background,
       appBar: AppBar(
-        title: const Text('Heart Risk Prediction',style: TextStyle(  fontWeight: FontWeight.bold,
-            letterSpacing: 1.1,color: MyCostants.secondary)), 
+        title: const Text(
+          'Heart Risk Prediction',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.1,
+            color: MyCostants.secondary,
+          ),
+        ),
         backgroundColor: MyCostants.primary,
         centerTitle: true,
         elevation: 2,
@@ -299,7 +320,7 @@ List<double> normalize(Map<String, double> input) {
                 if (!_isLoading)
                   Column(
                     children: [
-                       SizedBox(
+                      SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () => memorize(),
@@ -319,7 +340,8 @@ List<double> normalize(Map<String, double> input) {
                             ),
                           ),
                         ),
-                      ),const SizedBox(height: 8),
+                      ),
+                      const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -341,7 +363,6 @@ List<double> normalize(Map<String, double> input) {
                           ),
                         ),
                       ),
-
                     ],
                   ),
               ],
@@ -351,38 +372,46 @@ List<double> normalize(Map<String, double> input) {
       ),
     );
   }
-  
-Future<void>  memorize() async{
-  try {
-    final newPatientRecord = PatientData( 
-      id: Provider.of<UserProvider>(context, listen: false).userEmail,
-      timestamp: TemporalDateTime.new(DateTime.now().toLocal()), //the problem is the emulator you need to change the timezone in setting of android
-      age: widget.inputFeatures['age']!.toInt(),
-      gender: widget.gender,
-      chestPain: chestPainLabels.keys.elementAt(widget.inputFeatures['chestPain']!.toInt()),   
-      exerciseAngina:   widget.inputFeatures['exerciseAngina']==1.0 ? true:false,
-      cholesterol: widget.inputFeatures['cholesterol'],
-      numberOfVessels: widget.inputFeatures['numberOfVessels']!.toInt(),
-      thalassemia: thalassemiaLabels.keys.elementAt(widget.inputFeatures['thalassemia']!.toInt()),
-      fastingBloodSugar:  widget.inputFeatures['fastingBloodSugar']==1.0 ? true:false,
-      bloodPressure:  widget.inputFeatures['blood Pressure']!.toInt(),
-      restingEcg: widget.inputFeatures['restingEcg']!.toInt(), 
-      maxHeartRate:  widget.inputFeatures['maxHeartRate']!.toInt(),
-      stDepression:  widget.inputFeatures['stDepression'],
-      slope:  widget.inputFeatures['slope']!.toInt(),
-      output: predictionValue, 
-    
-    );
-    await Amplify.DataStore.save(newPatientRecord);
-    safePrint('Patient data saved successfully to DynamoDB via DataStore!');
-  } on AuthException catch (e) {
-    safePrint('Error getting user for saving data: ${e.message}');
-    // Handle cases where the user is not authenticated.
-  } on DataStoreException catch (e) {
-    safePrint('Error saving patient data: ${e.message}');
-  } catch (e) {
-    safePrint('An unexpected error occurred during data saving: $e');
-  }
 
+  Future<void> memorize() async {
+    try {
+      final newPatientRecord = PatientData(
+        id: Provider.of<UserProvider>(context, listen: false).userEmail,
+        timestamp: TemporalDateTime.new(
+          DateTime.now().toLocal(),
+        ), //the problem is the emulator you need to change the timezone in setting of android
+        age: widget.inputFeatures['age']!.toInt(),
+        gender: widget.gender,
+        chestPain: chestPainLabels.keys.elementAt(
+          widget.inputFeatures['chestPain']!.toInt(),
+        ),
+        exerciseAngina: widget.inputFeatures['exerciseAngina'] == 1.0
+            ? true
+            : false,
+        cholesterol: widget.inputFeatures['cholesterol'],
+        numberOfVessels: widget.inputFeatures['numberOfVessels']!.toInt(),
+        thalassemia: thalassemiaLabels.keys.elementAt(
+          widget.inputFeatures['thalassemia']!.toInt(),
+        ),
+        fastingBloodSugar: widget.inputFeatures['fastingBloodSugar'] == 1.0
+            ? true
+            : false,
+        bloodPressure: widget.inputFeatures['blood Pressure']!.toInt(),
+        restingEcg: widget.inputFeatures['restingEcg']!.toInt(),
+        maxHeartRate: widget.inputFeatures['maxHeartRate']!.toInt(),
+        stDepression: widget.inputFeatures['stDepression'],
+        slope: widget.inputFeatures['slope']!.toInt(),
+        output: predictionValue,
+      );
+      await Amplify.DataStore.save(newPatientRecord);
+      safePrint('Patient data saved successfully to DynamoDB via DataStore!');
+    } on AuthException catch (e) {
+      safePrint('Error getting user for saving data: ${e.message}');
+      // Handle cases where the user is not authenticated.
+    } on DataStoreException catch (e) {
+      safePrint('Error saving patient data: ${e.message}');
+    } catch (e) {
+      safePrint('An unexpected error occurred during data saving: $e');
+    }
   }
 }
