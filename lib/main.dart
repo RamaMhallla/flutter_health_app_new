@@ -8,8 +8,7 @@ import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_datastore/amplify_datastore.dart'; 
 import 'models/ModelProvider.dart';
 import 'amplifyconfiguration.dart';
-
-void main() async {
+ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _configureAmplify();
   runApp(const MyApp());
@@ -29,6 +28,7 @@ Future<void> _configureAmplify() async {
       // AmplifyAnalyticsPinpoint(),
     ]);
     await Amplify.configure(amplifyconfig);
+
 
     safePrint("Amplify configured successfully.");
   } on AmplifyAlreadyConfiguredException {

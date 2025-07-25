@@ -1,17 +1,23 @@
 {
   "api": {
     "flutterapp": {
-      "dependsOn": [],
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "flutterappd6ff9e1b"
+        }
+      ],
       "output": {
         "authConfig": {
           "additionalAuthenticationProviders": [],
           "defaultAuthentication": {
-            "apiKeyConfig": {
-              "apiKeyExpirationDate": "2025-08-16T16:28:31.508Z",
-              "apiKeyExpirationDays": 30,
-              "description": "patientsData"
-            },
-            "authenticationType": "API_KEY"
+            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+            "userPoolConfig": {
+              "userPoolId": "authflutterappd6ff9e1b"
+            }
           }
         }
       },
@@ -47,62 +53,5 @@
       "service": "Cognito"
     }
   },
-  "parameters": {
-    "AMPLIFY_storage_Todo5yid5luj55evljbdqvlpjylwbaNONE_arn": {
-      "usedBy": [
-        {
-          "category": "storage",
-          "resourceName": "Todo5yid5luj55evljbdqvlpjylwbaNONE"
-        }
-      ]
-    },
-    "AMPLIFY_storage_Todo5yid5luj55evljbdqvlpjylwbaNONE_partitionKeyName": {
-      "usedBy": [
-        {
-          "category": "storage",
-          "resourceName": "Todo5yid5luj55evljbdqvlpjylwbaNONE"
-        }
-      ]
-    },
-    "AMPLIFY_storage_Todo5yid5luj55evljbdqvlpjylwbaNONE_partitionKeyType": {
-      "usedBy": [
-        {
-          "category": "storage",
-          "resourceName": "Todo5yid5luj55evljbdqvlpjylwbaNONE"
-        }
-      ]
-    },
-    "AMPLIFY_storage_Todo5yid5luj55evljbdqvlpjylwbaNONE_region": {
-      "usedBy": [
-        {
-          "category": "storage",
-          "resourceName": "Todo5yid5luj55evljbdqvlpjylwbaNONE"
-        }
-      ]
-    },
-    "AMPLIFY_storage_Todo5yid5luj55evljbdqvlpjylwbaNONE_streamArn": {
-      "usedBy": [
-        {
-          "category": "storage",
-          "resourceName": "Todo5yid5luj55evljbdqvlpjylwbaNONE"
-        }
-      ]
-    },
-    "AMPLIFY_storage_Todo5yid5luj55evljbdqvlpjylwbaNONE_tableName": {
-      "usedBy": [
-        {
-          "category": "storage",
-          "resourceName": "Todo5yid5luj55evljbdqvlpjylwbaNONE"
-        }
-      ]
-    }
-  },
-  "storage": {
-    "Todo5yid5luj55evljbdqvlpjylwbaNONE": {
-      "dependsOn": [],
-      "providerPlugin": "awscloudformation",
-      "service": "DynamoDB",
-      "serviceType": "imported"
-    }
-  }
+  "storage": {}
 }

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:flutter_health_app_new/patientDashboard.dart';
+import 'package:flutter_health_app_new/screen/patientInput_screen.dart';
+import 'package:flutter_health_app_new/screen/medicalHistory_screen.dart';
 import 'package:flutter_health_app_new/screen/login_screen.dart';
+import 'package:flutter_health_app_new/screen/xrayAnalysis_screen.dart';
+import 'package:flutter_health_app_new/utility/MyCostants.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/user_provider.dart';
@@ -14,7 +17,7 @@ class DrawerWidget extends StatelessWidget {
     final userProvider = Provider.of<UserProvider>(context);
 
     return Drawer(
-      backgroundColor: const Color(0xFFE6F2F5),
+      backgroundColor: MyCostants.background2,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -25,14 +28,14 @@ class DrawerWidget extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF003366).withValues(alpha:0.1),
+                  color: MyCostants.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 36,
-                      backgroundColor: const Color(0xFF5B8FB9),
+                      backgroundColor: MyCostants.primary,
                       child: Image.asset(
                         "assets/images/profile.png",
                         width: 64,
@@ -45,13 +48,11 @@ class DrawerWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            userProvider.userEmail.isNotEmpty
-                                ? userProvider.userEmail.split('@')[0]
-                                : "Patient Name",
+                            "Email: ",
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
-                              color: Color(0xFF003366),
+                              color: MyCostants.secondary,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -63,7 +64,7 @@ class DrawerWidget extends StatelessWidget {
                                 : "patient@email.com",
                             style: const TextStyle(
                               fontSize: 14,
-                              color: Color(0xFF7F8C8D),
+                              color: MyCostants.background2,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -83,12 +84,28 @@ class DrawerWidget extends StatelessWidget {
                     _buildMenuItem(
                       icon: Icons.medical_information,
                       title: "X-Ray Analysis",
-                      onTap: () => Navigator.pop(context),
+                      onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const XRayAnalysisScreen(),
+                            ),
+                          );
+                      }, 
                     ),
                     _buildMenuItem(
                       icon: Icons.analytics,
-                      title: "Heart Health Analysis",
-                      onTap: () => Navigator.pop(context),
+                      title: "Heart Health Analysis",       
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PatientInputDashboard(),
+                          ),
+                        );
+                      }, 
                     ),
                     _buildMenuItem(
                       icon: Icons.history,
@@ -98,16 +115,16 @@ class DrawerWidget extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const PatientDashboard(),
+                            builder: (context) => const PatientMedicalHistoryScreen(),
                           ),
                         );
                       },
                     ),
-                    _buildMenuItem(
+                    /*_buildMenuItem(
                       icon: Icons.settings,
                       title: "Settings",
                       onTap: () => Navigator.pop(context),
-                    ),
+                    ),*/
                   ],
                 ),
               ),
@@ -118,7 +135,7 @@ class DrawerWidget extends StatelessWidget {
               _buildMenuItem(
                 icon: Icons.logout,
                 title: "Logout",
-                color: const Color(0xFFE53935),
+                color: MyCostants.error,
                 onTap: () async {
                   final confirm = await showDialog<bool>(
                     context: context,
@@ -131,10 +148,15 @@ class DrawerWidget extends StatelessWidget {
                           child: const Text("Cancel"),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.pop(context, true),
+                          onPressed: () => {Navigator.pop(context, true),   Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                        )},
                           child: const Text(
                             "Logout",
-                            style: TextStyle(color: Colors.red),
+                            style: TextStyle(color: MyCostants.error),
                           ),
                         ),
                       ],
@@ -162,7 +184,7 @@ class DrawerWidget extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text("Logout failed: ${e.message}"),
-                            backgroundColor: Colors.red,
+                            backgroundColor: MyCostants.error,
                           ),
                         );
                       }
@@ -181,7 +203,7 @@ class DrawerWidget extends StatelessWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    Color color = const Color(0xFF003366),
+    Color color = MyCostants.inEvidence,
   }) {
     return ListTile(
       leading: Icon(icon, color: color),

@@ -1,5 +1,6 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_health_app_new/patientDashboard.dart';
+import 'package:flutter_health_app_new/screen/patientInput_screen.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
 import 'package:flutter_health_app_new/screen/login_screen.dart';
 
@@ -14,35 +15,36 @@ class Root extends StatefulWidget {
 }
 
 class _RootState extends State<Root> {
-  AuthStatus _authStatus= AuthStatus.notLoggedIn;
+  AuthStatus _authStatus = AuthStatus.notLoggedIn;
+
   @override
-  void didChangeDependencies() async {
-    super.didChangeDependencies();
-    UserProvider _user=Provider.of<UserProvider>(
-            context,
-            listen: false,
-          );
-    if (_user.rememberMe){      
-    String _returnString =await _user.loadUserAttributes();
-      if (_returnString=='success'){
-        setState(() {
-           _authStatus= AuthStatus.loggedIn;
-        });
+  void initState() {
+    super.initState();
+    authCheck();
+  }
+
+   Future<void> authCheck() async{
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.loadFromPrefs();
+    final session = await Amplify.Auth.fetchAuthSession();
+    if (userProvider.rememberMe && userProvider.userEmail.isNotEmpty && session.isSignedIn){
+      setState(() => _authStatus = AuthStatus.loggedIn);
+    }else{
+      if(session.isSignedIn){
+        userProvider.signOut();
       }
+       setState(() => _authStatus = AuthStatus.notLoggedIn);
     }
   }
+
+
   @override
   Widget build(BuildContext context) {
-    Widget retVal;
-    switch(_authStatus){
-      case AuthStatus.notLoggedIn:
-      retVal=LoginScreen();
-      break;
-      case AuthStatus.loggedIn:
-      retVal=PatientDashboard();
-      break;
-    }return Scaffold(
-      body: retVal, 
+    
+    return Scaffold(
+      body: _authStatus == AuthStatus.loggedIn
+          ? const PatientInputDashboard()
+          : const LoginScreen(),
     );
   }
 }

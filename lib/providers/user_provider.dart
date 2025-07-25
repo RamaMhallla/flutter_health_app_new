@@ -2,71 +2,53 @@
 
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProvider extends ChangeNotifier {
-  String _userName = '';
   String _userEmail = '';
   bool _rememberMe = false;
 
-  String get userName => _userName;
   String get userEmail => _userEmail;
   bool get rememberMe=>_rememberMe;
   
-  Future<String> login(bool rememberMeP) async {
-      Future<String> ret=loadUserAttributes();
-      if (ret=="success"){
-        _rememberMe=rememberMeP;
-      }
-      return ret;
+  Future<void> login(bool remember, String email) async {
+    _rememberMe=remember;
+    _userEmail=email;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('rememberMe', _rememberMe);
+    prefs.setString('userEmail', _userEmail);
+    notifyListeners();
+  }
+  
+  Future<void> loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    _rememberMe = prefs.getBool('rememberMe') ?? false;
+    _userEmail = prefs.getString('userEmail') ?? '';
+    notifyListeners();
   }
 
-  Future<String> loadUserAttributes() async {
-    try {
-      final attributes = await Amplify.Auth.fetchUserAttributes();
-      _userEmail =
-          attributes
-              .firstWhere(
-                (attr) => attr.userAttributeKey == AuthUserAttributeKey.email,
-                orElse: () => const AuthUserAttribute(
-                  userAttributeKey: AuthUserAttributeKey.email,
-                  value: '',
-                ),
-              )
-              .value;
+  Future<void> signOut() async {
+      try {
+        await Amplify.Auth.signOut();
+        _userEmail = ''; // Clear user data
+        _rememberMe=false;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('rememberMe');
+        await prefs.remove('userEmail');
 
-      _userName =
-          attributes
-              .firstWhere(
-                (attr) => attr.userAttributeKey == AuthUserAttributeKey.name,
-                orElse: () => const AuthUserAttribute(
-                  userAttributeKey: AuthUserAttributeKey.name,
-                  value: '',
-                ),
-              )
-              .value;
-
-      notifyListeners();
-      if (_userName!='' && _userEmail!=''){
-          return "success";
+        safePrint('User signed out successfully.');
+      } on AuthException catch (e) {
+        safePrint('❌ Sign out failed: $e');
+      } finally {
+        notifyListeners(); // Notify listeners after sign out
       }
-    } catch (e) {
-      safePrint('❌ Failed to load user attributes: $e');
-    }
-    return "failure";
-
   }
 
-Future<void> signOut() async {
-    try {
-      await Amplify.Auth.signOut();
-      _userName = ''; // Clear user data
-      _userEmail = ''; // Clear user data
-      _rememberMe=false;
-      safePrint('User signed out successfully.');
-    } on AuthException catch (e) {
-      safePrint('❌ Sign out failed: $e');
-    } finally {
-      notifyListeners(); // Notify listeners after sign out
-    }
+  @override
+  void dispose() {
+    _userEmail = '';
+    _rememberMe = false;
+    super.dispose();
+
   }
 }

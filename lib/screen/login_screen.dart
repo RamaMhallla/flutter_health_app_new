@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_health_app_new/patientDashboard.dart';
+import 'package:flutter_health_app_new/screen/forgetPassword_screen.dart';
+import 'package:flutter_health_app_new/screen/patientInput_screen.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
 import 'package:flutter_health_app_new/screen/signUp_screen.dart';
+import 'package:flutter_health_app_new/utility/MyCostants.dart';
 
 import 'package:provider/provider.dart';
 
@@ -26,22 +28,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _checkIfAlreadySignedIn();
   }
 
-  Future<void> _checkIfAlreadySignedIn() async {
-    try {
-      final session = await Amplify.Auth.fetchAuthSession();
-      if (session.isSignedIn && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const PatientDashboard()),
-        );
-      }
-    } catch (e) {
-      debugPrint("⚠️ Error checking session: $e");
-    }
-  }
 
   @override
   void dispose() {
@@ -64,17 +52,19 @@ class _LoginScreenState extends State<LoginScreen> {
           username: _emailController.text.trim(),
           password: _passwordController.text,
         );
-
+        final user = await Amplify.Auth.getCurrentUser();
+        final id= user.userId;
         if (result.isSignedIn && mounted) {
           Provider.of<UserProvider>(
             context,
             listen: false,
-          ).login(_rememberMe);
-
+          ).login(_rememberMe,_emailController.text.trim());
           Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const PatientDashboard()),
-          );
+              context,
+              MaterialPageRoute(builder: (_) => const PatientInputDashboard()),
+           );
+          
+
         } else {
           _showError('Sign in not complete. Please verify your credentials.');
         }
@@ -92,10 +82,10 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: MyCostants.error,
         action: SnackBarAction(
           label: 'Retry',
-          textColor: Colors.white,
+          textColor: MyCostants.secondary,
           onPressed: _login,
         ),
       ),
@@ -115,11 +105,20 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (_) => AlertDialog(
         title: const Text('Forgot Password'),
         content: const Text(
-          'Password reset functionality will be implemented.',
+          'Do you sure to reset the password?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => {Navigator.pop(context),Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ForgotPasswordScreen(),
+                          ),
+                        )},
             child: const Text('OK'),
           ),
         ],
@@ -130,16 +129,17 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F2F5),
+      backgroundColor:  MyCostants.background2,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF5B8FB9),
+        automaticallyImplyLeading: false,
+        backgroundColor: MyCostants.primary,
         centerTitle: true,
         title: const Text(
           'Login',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1.1,
-            color: Colors.white,
+            color:  MyCostants.secondary,
           ),
         ),
         elevation: 2,
@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF003366),
+                      color: MyCostants.inEvidence,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -230,14 +230,14 @@ class _LoginScreenState extends State<LoginScreen> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF003366),
+                color: MyCostants.inEvidence,
               ),
             ),
             const SizedBox(height: 12),
             const Text(
               'Welcome back! Please sign in to continue.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Color(0xFF666666)),
+              style: TextStyle(fontSize: 16, color: MyCostants.textSubtitle),
             ),
             const SizedBox(height: 40),
             _buildFormCard(),
@@ -353,8 +353,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _login,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5B8FB9),
-                foregroundColor: Colors.white,
+                backgroundColor: MyCostants.primary,
+                foregroundColor:  MyCostants.secondary,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -367,7 +367,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color:  MyCostants.secondary,
                       ),
                     )
                   : const Text(
@@ -375,7 +375,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
-                        color: Colors.white,
+                        color:  MyCostants.secondary,
                       ),
                     ),
             ),
@@ -389,7 +389,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'OR',
-                    style: TextStyle(color: Color(0xFF666666), fontSize: 12),
+                    style: TextStyle(color: MyCostants.textSubtitle, fontSize: 12),
                   ),
                 ),
                 Expanded(child: Divider()),

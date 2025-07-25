@@ -1,9 +1,39 @@
 # This "input" configures a global authorization rule to enable public access to
 # all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
-input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
-type patientData @model {
-  id: ID!
-  time: String!
-  input: [String]
-  output: String
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}  
+enum ChestPain{
+  TYPICAL
+  ATYPICAL
+  NON_ANGINAL
+  ASYMPTOMATIC
+}
+enum Thalassemia{
+  NORMAL
+  FIXED_DEFECT
+  REVERSIBLE_DEFECT
+}
+
+type PatientData @model 
+@auth(rules: [    { allow: private, operations: [create, read, update, delete] }  ])
+{
+  id: ID! @primaryKey(sortKeyFields: ["timestamp"])
+  timestamp: AWSDateTime!
+  age: Int
+  gender: Gender
+  chestPain: ChestPain  
+  exerciseAngina: Boolean
+  cholesterol: Float 
+  numberOfVessels: Int
+  thalassemia: Thalassemia 
+  fastingBloodSugar: Boolean
+  bloodPressure: Int
+  restingEcg: Int 
+  maxHeartRate: Int
+  stDepression: Float
+  slope: Int 
+  output: Float
 }

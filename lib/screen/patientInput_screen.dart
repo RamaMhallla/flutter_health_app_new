@@ -1,34 +1,25 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter_health_app_new/models/ChestPain.dart';
+import 'package:flutter_health_app_new/models/Gender.dart';
+import 'package:flutter_health_app_new/models/Thalassemia.dart';
+import 'package:flutter_health_app_new/utility/MyCostants.dart';
 import 'package:flutter_health_app_new/widgets/drawer_widget.dart';
-import 'prediction_page.dart';
+import 'prediction_screen.dart';
 import 'dart:convert';
 import 'dart:async';
-import 'services/mqtt_service.dart';
+import '../services/mqtt_service.dart';
 
-class AppColor {
-  // Primary colors
-  static const primaryBlue = Color(0xFF5B8FB9);
-  static const lightBlue = Color(0xFFB6D0E2);
-  static const darkBlue = Color.fromARGB(255, 7, 72, 137);
 
-  // Status colors
-  static const success = Color(0xFF4CAF50);
-  static const warning = Color(0xFFFFA000);
-  static const error = Color(0xFFE53935);
-
-  // Text colors
-  static const textPrimary = Color(0xFF2C3E50);
-  static const textSecondary = Color(0xFF7F8C8D);
-}
-
-class PatientDashboard extends StatefulWidget {
-  const PatientDashboard({super.key});
+class PatientInputDashboard extends StatefulWidget {
+  const PatientInputDashboard({super.key});
 
   @override
-  State<PatientDashboard> createState() => _PatientDashboardState();
+  State<PatientInputDashboard> createState() => _PatientInputDashboardState();
 }
 
-class _PatientDashboardState extends State<PatientDashboard> {
+
+class _PatientInputDashboardState extends State<PatientInputDashboard> {
   final mqttService = MQTTService();
   bool _isConnected = false;
   bool _isLoading = false;
@@ -37,46 +28,52 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
   // Form values
   int _age = 30;
-  String _gender = 'Male';
-  String _chestPainType = 'Typical angina';
+  Gender _gender = Gender.MALE;
+  ChestPain _chestPainType = ChestPain.TYPICAL;
   bool _exerciseAngina = false;
 
   final TextEditingController cholController = TextEditingController();
   final TextEditingController fbsController = TextEditingController();
-  final TextEditingController caController = TextEditingController();
+  final TextEditingController vesselsController = TextEditingController();
   final TextEditingController thalController = TextEditingController();
 
   // MQTT sensor data
-  int? trestbps;
-  int? restecg;
-  int? thalach;
-  double? oldpeak;
+  int? bloodPressure;
+  int? restingEcg;
+  int? maxHeartRate;
+  double? stDepression;
   int? slope;
   // Add these variables to support maually insert when no connect with MQTT
-  int? manualTrestbps;
-  int? manualRestecg;
-  int? manualThalach;
-  double? manualOldpeak;
+  int? manualBloodPressure;
+  int? manualRestingEcg;
+  int? manualMaxHeartRate;
+  double? manualstDepression;
   int? manualSlope;
   //bool _showManualSensorInputs = false;
 
   // State variables to add at the top of your class
   bool _fbs = false; // Fasting Blood Sugar
-  int _ca = 0; // Number of Major Vessels
-  int _thal = 0; // Thalassemia Type
+  int _vessels = 0; // Number of Major Vessels
+  Thalassemia _thalassemiaType = Thalassemia.NORMAL; // Thalassemia Type
   // Chest pain type options
-  final List<String> _chestPainTypes = [
-    'Typical angina',
-    'Atypical angina',
-    'Non-anginal pain',
-    'Asymptomatic',
-  ];
+  final Map<ChestPain, String> chestPainLabels = {
+    ChestPain.TYPICAL: 'Typical angina',
+    ChestPain.ATYPICAL: 'Atypical angina',
+    ChestPain.NON_ANGINAL: 'Non-anginal pain',
+    ChestPain.ASYMPTOMATIC: 'Asymptomatic',
+  };
+
+  final Map<Thalassemia, String> thalassemiaLabels = {
+    Thalassemia.NORMAL: 'Normal',
+    Thalassemia.FIXED_DEFECT: 'Fixed Defect',
+    Thalassemia.REVERSIBLE_DEFECT: 'Reversible Defect',
+  };
 
   @override
-  void initState() {
+  void initState() { 
     super.initState();
     mqttService.onMessageReceived = handleMQTTMessage;
-    mqttService.onConnected = () => setState(() => _isConnected = false);
+    mqttService.onConnected = () => setState(() => _isConnected = true);
     mqttService.onDisconnected = () => setState(() => _isConnected = false);
     mqttService.connect();
   }
@@ -88,7 +85,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
     cholController.dispose();
     fbsController.dispose();
-    caController.dispose();
+    vesselsController.dispose();
     thalController.dispose();
     super.dispose();
   }
@@ -135,10 +132,10 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
       // ✅ تحديث القيم
       setState(() {
-        trestbps = data["trestbps"];
-        restecg = data["restecg"];
-        thalach = data["thalach"];
-        oldpeak = (data["oldpeak"] as num).toDouble();
+        bloodPressure = data["bloodPressure"];
+        restingEcg = data["restingEcg"];
+        maxHeartRate = data["maxHeartRate"];
+        stDepression = (data["stDepression"] as num).toDouble();
         slope = data["slope"];
       });
 
@@ -152,8 +149,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
     // تحقق من حقول الإدخال اليدوي
     final manualInputsValid =
         _age > 0 &&
-        (_gender == 'Male' || _gender == 'Female') &&
-        _chestPainTypes.contains(_chestPainType) &&
         (_exerciseAngina == true || _exerciseAngina == false) &&
         cholController.text.isNotEmpty;
 
@@ -164,12 +159,12 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
     // تحقق من بيانات الحساسات (إما من MQTT أو يدوي)
     final sensorValuesValid = _isConnected
-        ? [trestbps, restecg, thalach, oldpeak, slope].contains(null) == false
+        ? [bloodPressure, restingEcg, maxHeartRate, stDepression, slope].contains(null) == false
         : [
-                manualTrestbps,
-                manualRestecg,
-                manualThalach,
-                manualOldpeak,
+                manualBloodPressure,
+                manualRestingEcg,
+                manualMaxHeartRate,
+                manualstDepression,
                 manualSlope,
               ].contains(null) ==
               false;
@@ -182,27 +177,27 @@ class _PatientDashboardState extends State<PatientDashboard> {
     setState(() => _isLoading = true);
 
     try {
-      final trestbpsValue = _isConnected ? trestbps! : manualTrestbps!;
-      final restecgValue = _isConnected ? restecg! : manualRestecg!;
-      final thalachValue = _isConnected ? thalach! : manualThalach!;
-      final oldpeakValue = _isConnected ? oldpeak! : manualOldpeak!;
+      final bloodPressureValue = _isConnected ? bloodPressure! : manualBloodPressure!;
+      final restingEcgValue = _isConnected ? restingEcg! : manualRestingEcg!;
+      final maxHeartRateValue = _isConnected ? maxHeartRate! : manualMaxHeartRate!;
+      final stDepressionValue = _isConnected ? stDepression! : manualstDepression!;
       final slopeValue = _isConnected ? slope! : manualSlope!;
 
-      final inputFeatures = [
-        _age.toDouble(),
-        _gender == 'Male' ? 1.0 : 0.0,
-        _chestPainTypes.indexOf(_chestPainType).toDouble(),
-        trestbpsValue.toDouble(),
-        double.parse(cholController.text),
-        _fbs ? 1.0 : 0.0,
-        restecgValue.toDouble(),
-        thalachValue.toDouble(),
-        _exerciseAngina ? 1.0 : 0.0,
-        oldpeakValue,
-        slopeValue.toDouble(),
-        _ca.toDouble(),
-        _thal.toDouble(),
-      ];
+      final Map<String, double> inputFeatures = {
+        'age': _age.toDouble(), 
+        'gender': _gender == Gender.MALE ? 1.0 : 0.0,
+        'chestPain': chestPainLabels.keys.toList().indexOf(_chestPainType).toDouble(),
+        'blood Pressure':bloodPressureValue.toDouble(),
+        'cholesterol': double.parse(cholController.text),
+        'fastingBloodSugar':_fbs ? 1.0 : 0.0,
+        'restingEcg': restingEcgValue.toDouble(),
+        'maxHeartRate': maxHeartRateValue.toDouble(),
+        'exerciseAngina':_exerciseAngina ? 1.0 : 0.0,
+        'stDepression':stDepressionValue,
+        'slope':slopeValue.toDouble(),
+        'numberOfVessels':_vessels.toDouble(),
+        'thalassemia': thalassemiaLabels.keys.toList().indexOf(_thalassemiaType).toDouble(),
+      };
 
       if (!mounted) return;
 
@@ -221,7 +216,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
       //   thalach: _isConnected ? thalach! : manualThalach ?? 0,
       //   oldpeak: _isConnected ? oldpeak! : manualOldpeak ?? 0.0,
       //   slope: _isConnected ? slope! : manualSlope ?? 0,
-      //   ca: _ca,
+      //   vessels: _vessels,
       //   thal: _thal,
       //   result: "", // we can edit it after analysis
       // );
@@ -244,8 +239,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
         MaterialPageRoute(
           builder: (context) => PredictionPage(
             inputFeatures: inputFeatures,
-            name: "Patient",
-            age: _age,
             gender: _gender,
           ),
         ),
@@ -263,31 +256,31 @@ class _PatientDashboardState extends State<PatientDashboard> {
         icon: Icons.monitor_heart,
         title: 'Blood Pressure',
         unit: 'mmHg',
-        value: manualTrestbps?.toString() ?? '',
+        value: manualBloodPressure?.toString() ?? '',
         hint: '120',
-        onChanged: (value) => manualTrestbps = int.tryParse(value),
+        onChanged: (value) => manualBloodPressure = int.tryParse(value),
       ),
       _buildSensorInputCard(
         icon: Icons.monitor_heart,
         title: 'Resting ECG',
-        value: manualRestecg?.toString() ?? '',
+        value: manualRestingEcg?.toString() ?? '',
         hint: '0-2',
-        onChanged: (value) => manualRestecg = int.tryParse(value),
+        onChanged: (value) => manualRestingEcg = int.tryParse(value),
       ),
       _buildSensorInputCard(
         icon: Icons.favorite,
         title: 'Max Heart Rate',
         unit: 'BPM',
-        value: manualThalach?.toString() ?? '',
+        value: manualMaxHeartRate?.toString() ?? '',
         hint: '150',
-        onChanged: (value) => manualThalach = int.tryParse(value),
+        onChanged: (value) => manualMaxHeartRate = int.tryParse(value),
       ),
       _buildSensorInputCard(
         icon: Icons.trending_down,
         title: 'ST Depression',
-        value: manualOldpeak?.toString() ?? '',
+        value: manualstDepression?.toString() ?? '',
         hint: '1.5',
-        onChanged: (value) => manualOldpeak = double.tryParse(value),
+        onChanged: (value) => manualstDepression = double.tryParse(value),
       ),
       _buildSensorInputCard(
         icon: Icons.stacked_line_chart,
@@ -306,7 +299,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: AppColor.primaryBlue.withValues(alpha: 0.3),
+                color: MyCostants.primary.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -316,7 +309,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
               Icon(
                 Icons.edit_attributes,
                 size: 20,
-                color: AppColor.primaryBlue,
+                color: MyCostants.primary,
               ),
               SizedBox(width: 8),
               Text(
@@ -324,7 +317,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColor.darkBlue,
+                  color: MyCostants.inEvidence,
                 ),
               ),
             ],
@@ -385,7 +378,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
-          color: AppColor.primaryBlue.withValues(alpha: 0.2),
+          color: MyCostants.primary.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -396,7 +389,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
           children: [
             Row(
               children: [
-                Icon(icon, size: 18, color: AppColor.primaryBlue),
+                Icon(icon, size: 18, color: MyCostants.primary),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -404,7 +397,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: AppColor.textPrimary,
+                      color: MyCostants.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -421,7 +414,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
-                    color: AppColor.primaryBlue.withValues(alpha: 0.5),
+                    color: MyCostants.primary.withValues(alpha: 0.5),
                   ),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
@@ -433,7 +426,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         unit,
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColor.textSecondary,
+                          color: MyCostants.textSecondary,
                         ),
                       )
                     : null,
@@ -454,7 +447,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
           'Age',
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: AppColor.textPrimary,
+            color: MyCostants.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -472,7 +465,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
               width: 60,
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                border: Border.all(color: AppColor.primaryBlue),
+                border: Border.all(color: MyCostants.primary),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -503,7 +496,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
           'Gender',
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: AppColor.textPrimary,
+            color: MyCostants.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -512,35 +505,53 @@ class _PatientDashboardState extends State<PatientDashboard> {
             Expanded(
               child: ChoiceChip(
                 label: const Text('Male'),
-                selected: _gender == 'Male',
+                selected: _gender == Gender.MALE,
                 onSelected: (selected) {
                   setState(() {
-                    _gender = 'Male';
+                    _gender =  Gender.MALE;
                   });
                 },
-                selectedColor: AppColor.primaryBlue,
+                selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: _gender == 'Male'
+                  color: _gender ==  Gender.MALE
                       ? Colors.white
-                      : AppColor.textPrimary,
+                      : MyCostants.textPrimary,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 3),
             Expanded(
               child: ChoiceChip(
                 label: const Text('Female'),
-                selected: _gender == 'Female',
+                selected: _gender ==  Gender.FEMALE,
                 onSelected: (selected) {
                   setState(() {
-                    _gender = 'Female';
+                    _gender =Gender.FEMALE;
                   });
                 },
-                selectedColor: AppColor.primaryBlue,
+                selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: _gender == 'Female'
+                  color: _gender ==Gender.FEMALE
                       ? Colors.white
-                      : AppColor.textPrimary,
+                      : MyCostants.textPrimary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 3),
+            Expanded(
+              child: ChoiceChip(
+                label: const Text('Other'),
+                selected: _gender ==  Gender.OTHER,
+                onSelected: (selected) {
+                  setState(() {
+                    _gender =Gender.OTHER;
+                  });
+                },
+                selectedColor: MyCostants.primary,
+                labelStyle: TextStyle(
+                  color: _gender ==Gender.OTHER
+                      ? Colors.white
+                      : MyCostants.textPrimary,
                 ),
               ),
             ),
@@ -551,31 +562,34 @@ class _PatientDashboardState extends State<PatientDashboard> {
   }
 
   Widget _buildChestPainDropdown() {
-    return Column(
+  return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Chest Pain Type',
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: AppColor.textPrimary,
+            color: MyCostants.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
+        DropdownButtonFormField<ChestPain>(
           value: _chestPainType,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColor.primaryBlue),
+              borderSide: BorderSide(color: MyCostants.primary),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 14,
             ),
           ),
-          items: _chestPainTypes.map((String value) {
-            return DropdownMenuItem<String>(value: value, child: Text(value));
+          items: ChestPain.values.map((ChestPain type) {
+            return DropdownMenuItem<ChestPain>(
+              value: type,
+              child: Text(chestPainLabels[type]!),
+            );
           }).toList(),
           onChanged: (newValue) {
             setState(() {
@@ -587,6 +601,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
     );
   }
 
+
   Widget _buildExerciseAnginaToggle() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -595,7 +610,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
           'Exercise Induced Angina',
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: AppColor.textPrimary,
+            color: MyCostants.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -610,9 +625,9 @@ class _PatientDashboardState extends State<PatientDashboard> {
                     _exerciseAngina = true;
                   });
                 },
-                selectedColor: AppColor.primaryBlue,
+                selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: _exerciseAngina ? Colors.white : AppColor.textPrimary,
+                  color: _exerciseAngina ? Colors.white : MyCostants.textPrimary,
                 ),
               ),
             ),
@@ -626,9 +641,9 @@ class _PatientDashboardState extends State<PatientDashboard> {
                     _exerciseAngina = false;
                   });
                 },
-                selectedColor: AppColor.primaryBlue,
+                selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: !_exerciseAngina ? Colors.white : AppColor.textPrimary,
+                  color: !_exerciseAngina ? Colors.white : MyCostants.textPrimary,
                 ),
               ),
             ),
@@ -642,7 +657,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColor.warning,
+        backgroundColor: MyCostants.warning,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -712,7 +727,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 Icon(
                   Icons.medical_services,
                   size: 24,
-                  color: AppColor.darkBlue,
+                  color: MyCostants.inEvidence,
                 ),
                 SizedBox(width: 8),
                 Text(
@@ -720,7 +735,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColor.darkBlue,
+                    color: MyCostants.inEvidence,
                   ),
                 ),
               ],
@@ -775,13 +790,13 @@ class _PatientDashboardState extends State<PatientDashboard> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: AppColor.primaryBlue),
+            Icon(icon, size: 20, color: MyCostants.primary),
             const SizedBox(width: 8),
             Text(
               label,
               style: const TextStyle(
                 fontWeight: FontWeight.w500,
-                color: AppColor.textPrimary,
+                color: MyCostants.textPrimary,
               ),
             ),
           ],
@@ -798,12 +813,12 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   hintText: hint,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColor.primaryBlue),
+                    borderSide: BorderSide(color: MyCostants.primary),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(
-                      color: AppColor.primaryBlue,
+                      color: MyCostants.primary,
                       width: 2,
                     ),
                   ),
@@ -819,14 +834,14 @@ class _PatientDashboardState extends State<PatientDashboard> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               decoration: BoxDecoration(
-                color: AppColor.lightBlue,
+                color: MyCostants.background,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColor.primaryBlue),
+                border: Border.all(color: MyCostants.primary),
               ),
               child: Text(
                 unit,
                 style: const TextStyle(
-                  color: AppColor.darkBlue,
+                  color: MyCostants.inEvidence,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -848,13 +863,13 @@ class _PatientDashboardState extends State<PatientDashboard> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: AppColor.primaryBlue),
+            Icon(icon, size: 20, color: MyCostants.primary),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color: AppColor.textPrimary,
+                color: MyCostants.textPrimary,
               ),
             ),
           ],
@@ -865,7 +880,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
           title: Text(value ? 'Yes' : 'No'),
           value: value,
           onChanged: onChanged,
-          activeColor: AppColor.primaryBlue,
+          activeColor: MyCostants.primary,
         ),
       ],
     );
@@ -877,13 +892,13 @@ class _PatientDashboardState extends State<PatientDashboard> {
       children: [
         Row(
           children: [
-            Icon(Icons.bloodtype, size: 20, color: AppColor.primaryBlue),
+            Icon(Icons.bloodtype, size: 20, color:MyCostants.primary),
             const SizedBox(width: 8),
             Text(
               'Number of Major Vessels (0-4)',
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color: AppColor.textPrimary,
+                color: MyCostants.textPrimary,
               ),
             ),
           ],
@@ -894,15 +909,15 @@ class _PatientDashboardState extends State<PatientDashboard> {
           children: List.generate(5, (index) {
             return ChoiceChip(
               label: Text('$index'),
-              selected: _ca == index,
+              selected: _vessels == index,
               onSelected: (selected) {
                 setState(() {
-                  _ca = index;
+                  _vessels = index;
                 });
               },
-              selectedColor: AppColor.primaryBlue,
+              selectedColor: MyCostants.primary,
               labelStyle: TextStyle(
-                color: _ca == index ? Colors.white : AppColor.textPrimary,
+                color: _vessels == index ? Colors.white : MyCostants.textPrimary,
               ),
             );
           }),
@@ -912,12 +927,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
   }
 
   Widget _buildThalassemiaSelector() {
-    const Map<int, String> thalOptions = {
-      0: 'Normal',
-      1: 'Fixed Defect',
-      2: 'Reversible Defect',
-    };
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -926,40 +935,40 @@ class _PatientDashboardState extends State<PatientDashboard> {
             Icon(
               Icons.health_and_safety,
               size: 20,
-              color: AppColor.primaryBlue,
+              color: MyCostants.primary,
             ),
             const SizedBox(width: 8),
             Text(
               'Thalassemia Type',
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color: AppColor.textPrimary,
+                color: MyCostants.textPrimary,
               ),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        DropdownButtonFormField<int>(
-          value: _thal,
+        DropdownButtonFormField<Thalassemia>(
+          value: _thalassemiaType,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColor.primaryBlue),
+              borderSide: BorderSide(color: MyCostants.primary),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 14,
             ),
           ),
-          items: thalOptions.entries.map((entry) {
-            return DropdownMenuItem<int>(
-              value: entry.key,
-              child: Text(entry.value),
-            );
+          items: Thalassemia.values.map((Thalassemia type) {
+                  return DropdownMenuItem<Thalassemia>(
+                    value: type,
+                    child: Text(thalassemiaLabels[type]!),
+                  );
           }).toList(),
-          onChanged: (value) {
+          onChanged: (newValue) {
             setState(() {
-              _thal = value!;
+              _thalassemiaType = newValue!;
             });
           },
         ),
@@ -978,14 +987,14 @@ class _PatientDashboardState extends State<PatientDashboard> {
           children: [
             Row(
               children: [
-                Icon(Icons.sensors, size: 24, color: AppColor.primaryBlue),
+                Icon(Icons.sensors, size: 24, color: MyCostants.primary),
                 const SizedBox(width: 8),
                 const Text(
                   'Sensor Data',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColor.primaryBlue,
+                    color: MyCostants.primary,
                   ),
                 ),
                 const Spacer(),
@@ -1006,22 +1015,22 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   _buildDataTile(
                     icon: Icons.monitor_heart,
                     title: 'Blood Pressure',
-                    value: '${trestbps ?? '--'} mmHg',
+                    value: '${bloodPressure ?? '--'} mmHg',
                   ),
                   _buildDataTile(
                     icon: Icons.monitor_heart,
                     title: 'Resting ECG',
-                    value: '${restecg ?? '--'}',
+                    value: '${restingEcg ?? '--'}',
                   ),
                   _buildDataTile(
                     icon: Icons.favorite,
                     title: 'Max Heart Rate',
-                    value: '${thalach ?? '--'} BPM',
+                    value: '${maxHeartRate ?? '--'} BPM',
                   ),
                   _buildDataTile(
                     icon: Icons.trending_down,
                     title: 'ST Depression',
-                    value: oldpeak?.toStringAsFixed(2) ?? '--',
+                    value: stDepression?.toStringAsFixed(2) ?? '--',
                   ),
                   _buildDataTile(
                     icon: Icons.stacked_line_chart,
@@ -1044,27 +1053,40 @@ class _PatientDashboardState extends State<PatientDashboard> {
   }
 
   Widget _buildConnectionStatus() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: _isConnected ? AppColor.success : AppColor.error,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _isConnected ? Icons.wifi : Icons.wifi_off,
-            size: 16,
-            color: Colors.white,
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: _isConnected ? MyCostants.success : MyCostants.error,
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(width: 4),
-          Text(
-            _isConnected ? 'Connected' : 'Disconnected',
-            style: const TextStyle(color: Colors.white, fontSize: 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _isConnected ? Icons.wifi : Icons.wifi_off,
+                size: 16,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                _isConnected ? 'Connected' : 'Disconnected',
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width:3),
+        Switch(
+          value: _isConnected,
+          onChanged: (value) => setState(() => _isConnected = value),
+          activeColor:MyCostants.success, 
+          inactiveThumbColor: MyCostants.error,
+          inactiveTrackColor: const Color.fromARGB(255, 255, 155, 155),
+          trackOutlineColor: WidgetStateProperty.all(_isConnected?Color.fromARGB(0, 255, 255, 255) :Color.fromARGB(255, 255, 155, 155)),
+        ),
+      ],
     );
   }
 
@@ -1076,23 +1098,23 @@ class _PatientDashboardState extends State<PatientDashboard> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColor.lightBlue.withValues(alpha: 0.5),
+        color: MyCostants.background.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColor.primaryBlue.withValues(alpha: 0.2)),
+        border: Border.all(color: MyCostants.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: AppColor.primaryBlue),
+              Icon(icon, size: 20, color: MyCostants.primary),
               const SizedBox(width: 6),
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColor.textPrimary,
+                  color: MyCostants.textPrimary,
                 ),
               ),
             ],
@@ -1103,7 +1125,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColor.darkBlue,
+              color: MyCostants.inEvidence,
             ),
           ),
         ],
@@ -1117,7 +1139,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : navigateToPredictionPage,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColor.primaryBlue,
+          backgroundColor: MyCostants.primary,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -1164,14 +1186,14 @@ class _PatientDashboardState extends State<PatientDashboard> {
           children: [
             const Row(
               children: [
-                Icon(Icons.person_outline, size: 24, color: AppColor.darkBlue),
+                Icon(Icons.person_outline, size: 24, color: MyCostants.inEvidence),
                 SizedBox(width: 8),
                 Text(
                   'Patient Information',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColor.darkBlue,
+                    color: MyCostants.inEvidence,
                   ),
                 ),
               ],
@@ -1193,13 +1215,14 @@ class _PatientDashboardState extends State<PatientDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.lightBlue,
+      backgroundColor: MyCostants.background,
       drawer: const DrawerWidget(),
       appBar: AppBar(
-        title: const Text('Heart Health Monitor'),
-        backgroundColor: AppColor.lightBlue,
+        title: const Text('Heart Health Monitor',style: TextStyle(  fontWeight: FontWeight.bold,
+            letterSpacing: 1.1,color: MyCostants.secondary)), 
+        backgroundColor: MyCostants.primary,
         centerTitle: true,
-        elevation: 0,
+        elevation: 2,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -1213,7 +1236,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
           children: [
             _buildManualInputSection(),
             _buildMedicalDataSection(),
-
             _buildSensorDataSection(),
             const SizedBox(height: 24),
             _buildAnalyzeButton(),
