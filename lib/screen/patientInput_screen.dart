@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_health_app_new/models/ChestPain.dart';
 import 'package:flutter_health_app_new/models/Gender.dart';
@@ -10,7 +9,6 @@ import 'dart:convert';
 import 'dart:async';
 import '../services/mqtt_service.dart';
 
-
 class PatientInputDashboard extends StatefulWidget {
   const PatientInputDashboard({super.key});
 
@@ -18,11 +16,11 @@ class PatientInputDashboard extends StatefulWidget {
   State<PatientInputDashboard> createState() => _PatientInputDashboardState();
 }
 
-
 class _PatientInputDashboardState extends State<PatientInputDashboard> {
   final mqttService = MQTTService();
   bool _isConnected = false;
   bool _isLoading = false;
+  bool _hasRecentMQTTData = false; // ✅ لتتبع إذا وصلتنا بيانات حديثة من MQTT
 
   Timer? _mqttTimeoutTimer; // ✅ مؤقت مهلة MQTT
 
@@ -50,6 +48,9 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
   double? manualstDepression;
   int? manualSlope;
   //bool _showManualSensorInputs = false;
+  Timer? _networkPingTimer;
+  DateTime? _lastMQTTMessageTime;
+  Duration _mqttTimeoutDuration = const Duration(seconds: 20);
 
   // State variables to add at the top of your class
   bool _fbs = false; // Fasting Blood Sugar
@@ -70,18 +71,24 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
   };
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
     mqttService.onMessageReceived = handleMQTTMessage;
     mqttService.onConnected = () => setState(() => _isConnected = true);
-    mqttService.onDisconnected = () => setState(() => _isConnected = false);
+    mqttService.onDisconnected = () => setState(() {
+      _isConnected = false;
+      _hasRecentMQTTData = false;
+    });
+
     mqttService.connect();
+    startPingMonitor(); // ✅ تشغيل المراقبة الدورية
   }
 
   @override
   void dispose() {
     mqttService.disconnect();
-    _mqttTimeoutTimer?.cancel(); // ✅ أوقف التايمر
+    _mqttTimeoutTimer?.cancel();
+    _networkPingTimer?.cancel(); // ✅ أوقف الفحص الدوري
 
     cholController.dispose();
     fbsController.dispose();
@@ -92,26 +99,27 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
 
   void _resetMQTTTimeout() {
     _mqttTimeoutTimer?.cancel();
-    _mqttTimeoutTimer = Timer(const Duration(seconds: 15), () {
-      print("⛔ No MQTT message received in 15 seconds. Disconnecting...");
+    _mqttTimeoutTimer = Timer(const Duration(seconds: 20), () {
+      print("⛔ No MQTT message received in 20 seconds. Disconnecting...");
       mqttService.disconnect();
       setState(() {
         _isConnected = false;
+        _hasRecentMQTTData = false; // ⛔ لم تعد هناك بيانات حديثة
       });
     });
   }
 
   void handleMQTTMessage(String payload) {
+    _lastMQTTMessageTime = DateTime.now(); // ✅ عند استقبال رسالة
+
     try {
       final data = jsonDecode(payload);
 
-      // 🔐 التحقق من وجود timestamp في الرسالة
       if (!data.containsKey('timestamp')) {
         print("⚠️ Ignored message: No timestamp.");
         return;
       }
 
-      // تحويل timestamp إلى DateTime
       final messageTime = DateTime.tryParse(data['timestamp']);
       if (messageTime == null) {
         print("⚠️ Ignored message: Invalid timestamp format.");
@@ -121,28 +129,47 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       final now = DateTime.now().toUtc();
       final difference = now.difference(messageTime).inSeconds;
 
-      // // ⛔ تجاهل الرسائل القديمة (أقدم من 5 ثواني)
-      // if (difference > 5) {
-      //   print("⚠️ Ignored old message: $difference seconds old.");
-      //   return;
-      // }
-
-      // ✅ إعادة ضبط مؤقت المهلة لأن الرسالة صالحة
       _resetMQTTTimeout();
 
-      // ✅ تحديث القيم
       setState(() {
-        bloodPressure = data["bloodPressure"];
-        restingEcg = data["restingEcg"];
-        maxHeartRate = data["maxHeartRate"];
-        stDepression = (data["stDepression"] as num).toDouble();
+        bloodPressure = data["trestbps"];
+        restingEcg = data["restecg"];
+        maxHeartRate = data["thalach"];
+        stDepression = (data["oldpeak"] as num).toDouble();
         slope = data["slope"];
+        _hasRecentMQTTData = true; // ✅ استلمنا بيانات حديثة
       });
 
       print("📥 Processed valid message at $now (age: $difference sec)");
     } catch (e) {
       print("❌ Error parsing MQTT message: $e");
     }
+  }
+
+  void startPingMonitor() {
+    _networkPingTimer?.cancel();
+
+    _networkPingTimer = Timer.periodic(const Duration(seconds: 10), (_) async {
+      final now = DateTime.now();
+
+      if (_isConnected && _lastMQTTMessageTime != null) {
+        final timeSinceLastMessage = now.difference(_lastMQTTMessageTime!);
+
+        if (timeSinceLastMessage > _mqttTimeoutDuration) {
+          print(
+            "⚠️ No MQTT message for ${timeSinceLastMessage.inSeconds} sec. Disconnecting...",
+          );
+          mqttService.disconnect();
+          setState(() {
+            _isConnected = false;
+            _hasRecentMQTTData = false;
+          });
+        }
+      } else if (!_isConnected) {
+        print("🔄 Trying to reconnect to MQTT...");
+        mqttService.connect(); // نحاول الاتصال كل 10 ثواني إذا كنا غير متصلين
+      }
+    });
   }
 
   Future<void> navigateToPredictionPage() async {
@@ -159,7 +186,14 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
 
     // تحقق من بيانات الحساسات (إما من MQTT أو يدوي)
     final sensorValuesValid = _isConnected
-        ? [bloodPressure, restingEcg, maxHeartRate, stDepression, slope].contains(null) == false
+        ? [
+                bloodPressure,
+                restingEcg,
+                maxHeartRate,
+                stDepression,
+                slope,
+              ].contains(null) ==
+              false
         : [
                 manualBloodPressure,
                 manualRestingEcg,
@@ -177,26 +211,38 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
     setState(() => _isLoading = true);
 
     try {
-      final bloodPressureValue = _isConnected ? bloodPressure! : manualBloodPressure!;
+      final bloodPressureValue = _isConnected
+          ? bloodPressure!
+          : manualBloodPressure!;
       final restingEcgValue = _isConnected ? restingEcg! : manualRestingEcg!;
-      final maxHeartRateValue = _isConnected ? maxHeartRate! : manualMaxHeartRate!;
-      final stDepressionValue = _isConnected ? stDepression! : manualstDepression!;
+      final maxHeartRateValue = _isConnected
+          ? maxHeartRate!
+          : manualMaxHeartRate!;
+      final stDepressionValue = _isConnected
+          ? stDepression!
+          : manualstDepression!;
       final slopeValue = _isConnected ? slope! : manualSlope!;
 
       final Map<String, double> inputFeatures = {
-        'age': _age.toDouble(), 
+        'age': _age.toDouble(),
         'gender': _gender == Gender.MALE ? 1.0 : 0.0,
-        'chestPain': chestPainLabels.keys.toList().indexOf(_chestPainType).toDouble(),
-        'blood Pressure':bloodPressureValue.toDouble(),
+        'chestPain': chestPainLabels.keys
+            .toList()
+            .indexOf(_chestPainType)
+            .toDouble(),
+        'blood Pressure': bloodPressureValue.toDouble(),
         'cholesterol': double.parse(cholController.text),
-        'fastingBloodSugar':_fbs ? 1.0 : 0.0,
+        'fastingBloodSugar': _fbs ? 1.0 : 0.0,
         'restingEcg': restingEcgValue.toDouble(),
         'maxHeartRate': maxHeartRateValue.toDouble(),
-        'exerciseAngina':_exerciseAngina ? 1.0 : 0.0,
-        'stDepression':stDepressionValue,
-        'slope':slopeValue.toDouble(),
-        'numberOfVessels':_vessels.toDouble(),
-        'thalassemia': thalassemiaLabels.keys.toList().indexOf(_thalassemiaType).toDouble(),
+        'exerciseAngina': _exerciseAngina ? 1.0 : 0.0,
+        'stDepression': stDepressionValue,
+        'slope': slopeValue.toDouble(),
+        'numberOfVessels': _vessels.toDouble(),
+        'thalassemia': thalassemiaLabels.keys
+            .toList()
+            .indexOf(_thalassemiaType)
+            .toDouble(),
       };
 
       if (!mounted) return;
@@ -237,10 +283,8 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PredictionPage(
-            inputFeatures: inputFeatures,
-            gender: _gender,
-          ),
+          builder: (context) =>
+              PredictionPage(inputFeatures: inputFeatures, gender: _gender),
         ),
       );
     } catch (e) {
@@ -306,11 +350,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           ),
           child: const Row(
             children: [
-              Icon(
-                Icons.edit_attributes,
-                size: 20,
-                color: MyCostants.primary,
-              ),
+              Icon(Icons.edit_attributes, size: 20, color: MyCostants.primary),
               SizedBox(width: 8),
               Text(
                 'Enter Sensor Values Manually',
@@ -508,12 +548,12 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                 selected: _gender == Gender.MALE,
                 onSelected: (selected) {
                   setState(() {
-                    _gender =  Gender.MALE;
+                    _gender = Gender.MALE;
                   });
                 },
                 selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: _gender ==  Gender.MALE
+                  color: _gender == Gender.MALE
                       ? Colors.white
                       : MyCostants.textPrimary,
                 ),
@@ -523,15 +563,15 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
             Expanded(
               child: ChoiceChip(
                 label: const Text('Female'),
-                selected: _gender ==  Gender.FEMALE,
+                selected: _gender == Gender.FEMALE,
                 onSelected: (selected) {
                   setState(() {
-                    _gender =Gender.FEMALE;
+                    _gender = Gender.FEMALE;
                   });
                 },
                 selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: _gender ==Gender.FEMALE
+                  color: _gender == Gender.FEMALE
                       ? Colors.white
                       : MyCostants.textPrimary,
                 ),
@@ -541,15 +581,15 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
             Expanded(
               child: ChoiceChip(
                 label: const Text('Other'),
-                selected: _gender ==  Gender.OTHER,
+                selected: _gender == Gender.OTHER,
                 onSelected: (selected) {
                   setState(() {
-                    _gender =Gender.OTHER;
+                    _gender = Gender.OTHER;
                   });
                 },
                 selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: _gender ==Gender.OTHER
+                  color: _gender == Gender.OTHER
                       ? Colors.white
                       : MyCostants.textPrimary,
                 ),
@@ -562,7 +602,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
   }
 
   Widget _buildChestPainDropdown() {
-  return Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
@@ -601,7 +641,6 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
     );
   }
 
-
   Widget _buildExerciseAnginaToggle() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -627,7 +666,9 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                 },
                 selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: _exerciseAngina ? Colors.white : MyCostants.textPrimary,
+                  color: _exerciseAngina
+                      ? Colors.white
+                      : MyCostants.textPrimary,
                 ),
               ),
             ),
@@ -643,7 +684,9 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                 },
                 selectedColor: MyCostants.primary,
                 labelStyle: TextStyle(
-                  color: !_exerciseAngina ? Colors.white : MyCostants.textPrimary,
+                  color: !_exerciseAngina
+                      ? Colors.white
+                      : MyCostants.textPrimary,
                 ),
               ),
             ),
@@ -892,7 +935,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       children: [
         Row(
           children: [
-            Icon(Icons.bloodtype, size: 20, color:MyCostants.primary),
+            Icon(Icons.bloodtype, size: 20, color: MyCostants.primary),
             const SizedBox(width: 8),
             Text(
               'Number of Major Vessels (0-4)',
@@ -917,7 +960,9 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
               },
               selectedColor: MyCostants.primary,
               labelStyle: TextStyle(
-                color: _vessels == index ? Colors.white : MyCostants.textPrimary,
+                color: _vessels == index
+                    ? Colors.white
+                    : MyCostants.textPrimary,
               ),
             );
           }),
@@ -932,11 +977,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.health_and_safety,
-              size: 20,
-              color: MyCostants.primary,
-            ),
+            Icon(Icons.health_and_safety, size: 20, color: MyCostants.primary),
             const SizedBox(width: 8),
             Text(
               'Thalassemia Type',
@@ -961,10 +1002,10 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
             ),
           ),
           items: Thalassemia.values.map((Thalassemia type) {
-                  return DropdownMenuItem<Thalassemia>(
-                    value: type,
-                    child: Text(thalassemiaLabels[type]!),
-                  );
+            return DropdownMenuItem<Thalassemia>(
+              value: type,
+              child: Text(thalassemiaLabels[type]!),
+            );
           }).toList(),
           onChanged: (newValue) {
             setState(() {
@@ -1003,7 +1044,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
             ),
             const SizedBox(height: 16),
 
-            if (_isConnected) ...[
+            if (_isConnected && _hasRecentMQTTData) ...[
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -1058,33 +1099,30 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: _isConnected ? MyCostants.success : MyCostants.error,
+            color: _isConnected && _hasRecentMQTTData
+                ? MyCostants.success
+                : MyCostants.error,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                _isConnected ? Icons.wifi : Icons.wifi_off,
+                _isConnected && _hasRecentMQTTData
+                    ? Icons.wifi
+                    : Icons.wifi_off,
                 size: 16,
                 color: Colors.white,
               ),
               const SizedBox(width: 4),
               Text(
-                _isConnected ? 'Connected' : 'Disconnected',
+                _isConnected && _hasRecentMQTTData
+                    ? 'Connected'
+                    : 'Disconnected',
                 style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
             ],
           ),
-        ),
-        const SizedBox(width:3),
-        Switch(
-          value: _isConnected,
-          onChanged: (value) => setState(() => _isConnected = value),
-          activeColor:MyCostants.success, 
-          inactiveThumbColor: MyCostants.error,
-          inactiveTrackColor: const Color.fromARGB(255, 255, 155, 155),
-          trackOutlineColor: WidgetStateProperty.all(_isConnected?Color.fromARGB(0, 255, 255, 255) :Color.fromARGB(255, 255, 155, 155)),
         ),
       ],
     );
@@ -1186,7 +1224,11 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
           children: [
             const Row(
               children: [
-                Icon(Icons.person_outline, size: 24, color: MyCostants.inEvidence),
+                Icon(
+                  Icons.person_outline,
+                  size: 24,
+                  color: MyCostants.inEvidence,
+                ),
                 SizedBox(width: 8),
                 Text(
                   'Patient Information',
@@ -1218,8 +1260,14 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       backgroundColor: MyCostants.background,
       drawer: const DrawerWidget(),
       appBar: AppBar(
-        title: const Text('Heart Health Monitor',style: TextStyle(  fontWeight: FontWeight.bold,
-            letterSpacing: 1.1,color: MyCostants.secondary)), 
+        title: const Text(
+          'Heart Health Monitor',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.1,
+            color: MyCostants.secondary,
+          ),
+        ),
         backgroundColor: MyCostants.primary,
         centerTitle: true,
         elevation: 2,
