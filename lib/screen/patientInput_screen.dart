@@ -1049,7 +1049,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 2,
-                childAspectRatio: 1.5,
+                childAspectRatio: 1.3,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 children: [
@@ -1142,29 +1142,37 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Add this
         children: [
           Row(
             children: [
               Icon(icon, size: 20, color: MyCostants.primary),
               const SizedBox(width: 6),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: MyCostants.textPrimary,
+              Expanded(
+                // Wrap the text with Expanded
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12, // Reduce font size slightly
+                    fontWeight: FontWeight.w500,
+                    color: MyCostants.textPrimary,
+                  ),
+                  maxLines: 2, // Allow 2 lines
+                  overflow: TextOverflow.ellipsis, // Handle overflow
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4), // Reduce spacing
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16, // Reduce font size slightly
               fontWeight: FontWeight.bold,
               color: MyCostants.inEvidence,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -1261,10 +1269,9 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
       drawer: const DrawerWidget(),
       appBar: AppBar(
         title: const Text(
-          'Heart Health Monitor',
+          'Heart Health Analysis',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            letterSpacing: 1.1,
             color: MyCostants.secondary,
           ),
         ),
