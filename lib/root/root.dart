@@ -27,7 +27,7 @@ class _RootState extends State<Root> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     await userProvider.loadFromPrefs();
     final session = await Amplify.Auth.fetchAuthSession();
-    if (userProvider.rememberMe && userProvider.userEmail.isNotEmpty && session.isSignedIn){
+    if (userProvider.rememberMe && userProvider.userEmail.isNotEmpty){
       setState(() => _authStatus = AuthStatus.loggedIn);
     }else{
       if(session.isSignedIn){
