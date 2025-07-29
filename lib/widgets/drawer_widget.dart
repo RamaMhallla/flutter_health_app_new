@@ -85,18 +85,18 @@ class DrawerWidget extends StatelessWidget {
                       icon: Icons.medical_information,
                       title: "X-Ray Analysis",
                       onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const XRayAnalysisScreen(),
-                            ),
-                          );
-                      }, 
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const XRayAnalysisScreen(),
+                          ),
+                        );
+                      },
                     ),
                     _buildMenuItem(
                       icon: Icons.analytics,
-                      title: "Heart Health Analysis",       
+                      title: "Heart Health Analysis",
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(
@@ -105,7 +105,7 @@ class DrawerWidget extends StatelessWidget {
                             builder: (context) => const PatientInputDashboard(),
                           ),
                         );
-                      }, 
+                      },
                     ),
                     _buildMenuItem(
                       icon: Icons.history,
@@ -115,7 +115,8 @@ class DrawerWidget extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const PatientMedicalHistoryScreen(),
+                            builder: (context) =>
+                                const PatientMedicalHistoryScreen(),
                           ),
                         );
                       },
@@ -148,12 +149,15 @@ class DrawerWidget extends StatelessWidget {
                           child: const Text("Cancel"),
                         ),
                         TextButton(
-                          onPressed: () => {Navigator.pop(context, true),   Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                        )},
+                          onPressed: () => {
+                            Navigator.pop(context, true),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            ),
+                          },
                           child: const Text(
                             "Logout",
                             style: TextStyle(color: MyCostants.error),

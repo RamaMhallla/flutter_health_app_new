@@ -1259,6 +1259,7 @@ class _PatientInputDashboardState extends State<PatientInputDashboard> {
     return Scaffold(
       backgroundColor: MyCostants.background,
       drawer: const DrawerWidget(),
+
       appBar: AppBar(
         title: const Text(
           'Heart Health Monitor',

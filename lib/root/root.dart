@@ -5,7 +5,8 @@ import 'package:flutter_health_app_new/providers/user_provider.dart';
 import 'package:flutter_health_app_new/screen/login_screen.dart';
 
 import 'package:provider/provider.dart';
-enum AuthStatus{notLoggedIn, loggedIn}
+
+enum AuthStatus { notLoggedIn, loggedIn }
 
 class Root extends StatefulWidget {
   const Root({super.key});
@@ -23,24 +24,22 @@ class _RootState extends State<Root> {
     authCheck();
   }
 
-   Future<void> authCheck() async{
+  Future<void> authCheck() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     await userProvider.loadFromPrefs();
     final session = await Amplify.Auth.fetchAuthSession();
-    if (userProvider.rememberMe && userProvider.userEmail.isNotEmpty && session.isSignedIn){
+    if (userProvider.rememberMe && userProvider.userEmail.isNotEmpty) {
       setState(() => _authStatus = AuthStatus.loggedIn);
-    }else{
-      if(session.isSignedIn){
+    } else {
+      if (session.isSignedIn) {
         userProvider.signOut();
       }
-       setState(() => _authStatus = AuthStatus.notLoggedIn);
+      setState(() => _authStatus = AuthStatus.notLoggedIn);
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       body: _authStatus == AuthStatus.loggedIn
           ? const PatientInputDashboard()
