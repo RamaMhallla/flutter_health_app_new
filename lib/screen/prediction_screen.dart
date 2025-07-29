@@ -99,22 +99,18 @@ class _PredictionPageState extends State<PredictionPage> {
     try {
       print("🚀 STARTING runModel() function...");
       print("🔥 input features: ${widget.inputFeatures}");
-
       List<double> normalizedInput = normalize(widget.inputFeatures);
       print("📥 Normalized Input: $normalizedInput");
-
       double prediction;
+      int durationMs;
 
-      // Always try calling the API first
       try {
         final url = Uri.parse(
           'https://pj1e33elr0.execute-api.eu-central-1.amazonaws.com/prod/predict',
         );
-
         final idToken = await getIdToken();
-        print("🪪 Token: $idToken");
-
         if (idToken != null) {
+          final startTime = DateTime.now(); // ⏱️ Start timing
           final response = await http.post(
             url,
             headers: {
@@ -123,13 +119,13 @@ class _PredictionPageState extends State<PredictionPage> {
             },
             body: jsonEncode({'features': normalizedInput}),
           );
-
-          print("🔁 Response Body: ${response.body}");
+          final endTime = DateTime.now(); // 🛑 End timing
+          durationMs = endTime.difference(startTime).inMilliseconds;
+          print("⏱️ API Inference Time: $durationMs ms");
 
           if (response.statusCode == 200) {
-            final decoded = jsonDecode(response.body); // Map<String, dynamic>
+            final decoded = jsonDecode(response.body);
             prediction = decoded['prediction']?.toDouble() ?? 0.0;
-
             print("✅ Prediction from AWS: $prediction");
             source = "AWS";
           } else {
@@ -142,7 +138,12 @@ class _PredictionPageState extends State<PredictionPage> {
         }
       } catch (e) {
         print("⚠️❌ API request failed, fallback to local model: $e");
+        final startTime = DateTime.now(); // ⏱️ Start local timing
         prediction = await runLocalModel(normalizedInput);
+        final endTime = DateTime.now(); // 🛑 End local timing
+        durationMs = endTime.difference(startTime).inMilliseconds;
+        print("⏱️ Local Inference Time: $durationMs ms");
+
         source = "Local";
       }
 

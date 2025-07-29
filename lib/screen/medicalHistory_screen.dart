@@ -11,13 +11,14 @@ class PatientMedicalHistoryScreen extends StatefulWidget {
   const PatientMedicalHistoryScreen({super.key});
 
   @override
-  State<PatientMedicalHistoryScreen> createState() => _PatientMedicalHistoryScreenState();
+  State<PatientMedicalHistoryScreen> createState() =>
+      _PatientMedicalHistoryScreenState();
 }
 
-class _PatientMedicalHistoryScreenState extends State<PatientMedicalHistoryScreen> {
+class _PatientMedicalHistoryScreenState
+    extends State<PatientMedicalHistoryScreen> {
   List<PatientData> results = [];
   bool isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -55,50 +56,95 @@ class _PatientMedicalHistoryScreenState extends State<PatientMedicalHistoryScree
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const DrawerWidget(),
-      appBar: AppBar(title: Text("Medical History", style: TextStyle(  fontWeight: FontWeight.bold,
-            letterSpacing: 1.1,color: MyCostants.secondary),),centerTitle: true,  elevation: 2, backgroundColor: MyCostants.primary,),
+      appBar: AppBar(
+        title: Text(
+          "Medical History Dashboard",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.1,
+            color: MyCostants.secondary,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 2,
+        backgroundColor: MyCostants.primary,
+      ),
       backgroundColor: MyCostants.background,
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : results.isEmpty
-              ? Center(child: Text("No patient records found."))
-              : ListView.builder(
-                  itemCount: results.length,
-                  padding: EdgeInsets.all(12),
-                  itemBuilder: (context, index) {
-                    final patient = results[index];
-                    return Card(
-                      color: MyCostants.secondary,
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _infoRow("Timestamp", formatDate(patient.timestamp)),
-                            _infoRow("Age", patient.age?.toString()),
-                            _infoRow("Gender", formatEnum(patient.gender)),
-                            _infoRow("Chest Pain", formatEnum(patient.chestPain)),
-                            _infoRow("Exercise Angina", patient.exerciseAngina==null ? "no": patient.exerciseAngina! ? "Yes" : "No"),
-                            _infoRow("Cholesterol", patient.cholesterol?.toStringAsFixed(1)),
-                            _infoRow("Number of Vessels", patient.numberOfVessels?.toString()),
-                            _infoRow("Thalassemia", formatEnum(patient.thalassemia)),
-                            _infoRow("Fasting Blood Sugar", patient.fastingBloodSugar==null ? "No" : patient.fastingBloodSugar! ? "Yes" : "No"),
-                            _infoRow("Blood Pressure", patient.bloodPressure?.toString()),
-                            _infoRow("Resting ECG", patient.restingEcg?.toString()),
-                            _infoRow("Max Heart Rate", patient.maxHeartRate?.toString()),
-                            _infoRow("ST Depression", patient.stDepression?.toStringAsFixed(2)),
-                            _infoRow("Slope", patient.slope?.toString()),
-                            _infoRow("Output", patient.output?.toStringAsFixed(2)),
-                            _infoRow("Model", patient.model?.toString()),
-                          ],
+          ? Center(child: Text("No patient records found."))
+          : ListView.builder(
+              itemCount: results.length,
+              padding: EdgeInsets.all(12),
+              itemBuilder: (context, index) {
+                final patient = results[index];
+                return Card(
+                  color: MyCostants.secondary,
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _infoRow("Timestamp", formatDate(patient.timestamp)),
+                        _infoRow("Age", patient.age?.toString()),
+                        _infoRow("Gender", formatEnum(patient.gender)),
+                        _infoRow("Chest Pain", formatEnum(patient.chestPain)),
+                        _infoRow(
+                          "Exercise Angina",
+                          patient.exerciseAngina == null
+                              ? "no"
+                              : patient.exerciseAngina!
+                              ? "Yes"
+                              : "No",
                         ),
-                      ),
-                    );
-                  },
-                ),
+                        _infoRow(
+                          "Cholesterol",
+                          patient.cholesterol?.toStringAsFixed(1),
+                        ),
+                        _infoRow(
+                          "Number of Vessels",
+                          patient.numberOfVessels?.toString(),
+                        ),
+                        _infoRow(
+                          "Thalassemia",
+                          formatEnum(patient.thalassemia),
+                        ),
+                        _infoRow(
+                          "Fasting Blood Sugar",
+                          patient.fastingBloodSugar == null
+                              ? "No"
+                              : patient.fastingBloodSugar!
+                              ? "Yes"
+                              : "No",
+                        ),
+                        _infoRow(
+                          "Blood Pressure",
+                          patient.bloodPressure?.toString(),
+                        ),
+                        _infoRow("Resting ECG", patient.restingEcg?.toString()),
+                        _infoRow(
+                          "Max Heart Rate",
+                          patient.maxHeartRate?.toString(),
+                        ),
+                        _infoRow(
+                          "ST Depression",
+                          patient.stDepression?.toStringAsFixed(2),
+                        ),
+                        _infoRow("Slope", patient.slope?.toString()),
+                        _infoRow("Output", patient.output?.toStringAsFixed(2)),
+                        _infoRow("Model", patient.model?.toString()),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 
@@ -108,8 +154,17 @@ class _PatientMedicalHistoryScreenState extends State<PatientMedicalHistoryScree
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold,color: MyCostants.textPrimary)),
-          Text(value ?? "N/A", style: TextStyle(color:MyCostants.textSubtitle)),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: MyCostants.textPrimary,
+            ),
+          ),
+          Text(
+            value ?? "N/A",
+            style: TextStyle(color: MyCostants.textSubtitle),
+          ),
         ],
       ),
     );

@@ -30,14 +30,14 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
   }
 
-
   @override
   void dispose() {
-      _emailController.dispose();
-      _passwordController.dispose();
-      _rememberMe = false;
-      super.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _rememberMe = false;
+    super.dispose();
   }
+
   // Email validation regex
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
@@ -53,18 +53,16 @@ class _LoginScreenState extends State<LoginScreen> {
           password: _passwordController.text,
         );
         final user = await Amplify.Auth.getCurrentUser();
-        final id= user.userId;
+        final id = user.userId;
         if (result.isSignedIn && mounted) {
           Provider.of<UserProvider>(
             context,
             listen: false,
-          ).login(_rememberMe,_emailController.text.trim());
+          ).login(_rememberMe, _emailController.text.trim());
           Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const PatientInputDashboard()),
-           );
-          
-
+            context,
+            MaterialPageRoute(builder: (_) => const PatientInputDashboard()),
+          );
         } else {
           _showError('Sign in not complete. Please verify your credentials.');
         }
@@ -104,21 +102,22 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Forgot Password'),
-        content: const Text(
-          'Do you sure to reset the password?',
-        ),
+        content: const Text('Do you sure to reset the password?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text("Cancel"),
           ),
           TextButton(
-            onPressed: () => {Navigator.pop(context),Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ForgotPasswordScreen(),
-                          ),
-                        )},
+            onPressed: () => {
+              Navigator.pop(context),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ForgotPasswordScreen(),
+                ),
+              ),
+            },
             child: const Text('OK'),
           ),
         ],
@@ -129,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:  MyCostants.background2,
+      backgroundColor: MyCostants.background2,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: MyCostants.primary,
@@ -139,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1.1,
-            color:  MyCostants.secondary,
+            color: MyCostants.secondary,
           ),
         ),
         elevation: 2,
@@ -354,7 +353,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: _isLoading ? null : _login,
               style: ElevatedButton.styleFrom(
                 backgroundColor: MyCostants.primary,
-                foregroundColor:  MyCostants.secondary,
+                foregroundColor: MyCostants.secondary,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -367,7 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color:  MyCostants.secondary,
+                        color: MyCostants.secondary,
                       ),
                     )
                   : const Text(
@@ -375,7 +374,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
-                        color:  MyCostants.secondary,
+                        color: MyCostants.secondary,
                       ),
                     ),
             ),
@@ -389,7 +388,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'OR',
-                    style: TextStyle(color: MyCostants.textSubtitle, fontSize: 12),
+                    style: TextStyle(
+                      color: MyCostants.textSubtitle,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
                 Expanded(child: Divider()),

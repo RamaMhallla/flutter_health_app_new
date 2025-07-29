@@ -12,7 +12,6 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
-
 class XRayAnalysisScreen extends StatefulWidget {
   const XRayAnalysisScreen({super.key});
 
@@ -136,7 +135,7 @@ class _XRayAnalysisScreenState extends State<XRayAnalysisScreen> {
   //_buildImagePreview  Card to show the chosen image or No X-ray image selected
   Widget _buildImagePreview() {
     return Card(
-      color: _image == null? MyCostants.background2 : MyCostants.secondary,
+      color: _image == null ? MyCostants.background2 : MyCostants.secondary,
       margin: const EdgeInsets.only(bottom: 20),
       elevation: 4, // Card shadow depth
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -171,14 +170,17 @@ class _XRayAnalysisScreenState extends State<XRayAnalysisScreen> {
                     ),
                   )
                 : ClipRRect(
-
                     // If image is selected, show it inside a clipped widget with rounded corners
                     borderRadius: BorderRadius.circular(10),
                     // _image! is the selected image file
-                    child: Image.file(_image!,  width: double.infinity, height: 200 , fit: BoxFit.cover),
+                    child: Image.file(
+                      _image!,
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
                   ),
             if (_image != null) ...[
-              
               // If image is selected, add description text
               const SizedBox(height: 12),
               Text(
@@ -195,7 +197,9 @@ class _XRayAnalysisScreenState extends State<XRayAnalysisScreen> {
   // _buildAnalysisCard - Card that displays the result of the AI analysiss
   Widget _buildAnalysisCard() {
     return Card(
-      color: _confidence.isNotEmpty ? MyCostants.secondary:MyCostants.background2 ,
+      color: _confidence.isNotEmpty
+          ? MyCostants.secondary
+          : MyCostants.background2,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
@@ -206,14 +210,22 @@ class _XRayAnalysisScreenState extends State<XRayAnalysisScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.analytics, size: 24, color: _confidence.isNotEmpty? MyCostants.inEvidence: MyCostants.primary),
+                Icon(
+                  Icons.analytics,
+                  size: 24,
+                  color: _confidence.isNotEmpty
+                      ? MyCostants.inEvidence
+                      : MyCostants.primary,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Analysis Results',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color:  _confidence.isNotEmpty? MyCostants.inEvidence: MyCostants.primary,
+                    color: _confidence.isNotEmpty
+                        ? MyCostants.inEvidence
+                        : MyCostants.primary,
                   ),
                 ),
               ],
@@ -221,9 +233,7 @@ class _XRayAnalysisScreenState extends State<XRayAnalysisScreen> {
             const SizedBox(height: 16),
             _isLoading //Check if loading (analysis in progress)
                 ? Center(
-                    child: CircularProgressIndicator(
-                      color: MyCostants.primary,
-                    ),
+                    child: CircularProgressIndicator(color: MyCostants.primary),
                   )
                 : Column(
                     // If not loading, show result text and confidence
@@ -264,15 +274,20 @@ class _XRayAnalysisScreenState extends State<XRayAnalysisScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: MyCostants.background,
-      drawer: const DrawerWidget(),
       appBar: AppBar(
-        title: const Text('X-Ray Analysis', style: TextStyle(  fontWeight: FontWeight.bold,
-            letterSpacing: 1.1,color: MyCostants.secondary)),
+        title: const Text(
+          'X-Ray Analysis',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.1,
+            color: MyCostants.secondary,
+          ),
+        ),
         backgroundColor: MyCostants.primary,
         centerTitle: true,
         elevation: 2, // Remove shadow under the AppBar
       ),
-      body:SingleChildScrollView(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
@@ -284,9 +299,11 @@ class _XRayAnalysisScreenState extends State<XRayAnalysisScreen> {
                   child: ElevatedButton.icon(
                     onPressed:
                         pickImage, // Function to open gallery and pick image
-                    icon: const Icon(Icons.image,color: MyCostants.inEvidence),
-                    label: const Text('Select Image',style: TextStyle(color: 
-                    MyCostants.inEvidence),),
+                    icon: const Icon(Icons.image, color: MyCostants.inEvidence),
+                    label: const Text(
+                      'Select Image',
+                      style: TextStyle(color: MyCostants.inEvidence),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: MyCostants.secondary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -303,8 +320,14 @@ class _XRayAnalysisScreenState extends State<XRayAnalysisScreen> {
                     _modelLoaded && _image != null
                         ? analyzeImage
                         : null,
-                    icon: const Icon(Icons.analytics,color: MyCostants.secondary),
-                    label: const Text('Analyze', style: TextStyle(color: MyCostants.secondary),),
+                    icon: const Icon(
+                      Icons.analytics,
+                      color: MyCostants.secondary,
+                    ),
+                    label: const Text(
+                      'Analyze',
+                      style: TextStyle(color: MyCostants.secondary),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: MyCostants.inEvidence,
                       padding: const EdgeInsets.symmetric(vertical: 16),
