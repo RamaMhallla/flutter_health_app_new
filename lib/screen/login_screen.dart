@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_health_app_new/screen/MainTabScreen.dart';
 import 'package:flutter_health_app_new/screen/forgetPassword_screen.dart';
 import 'package:flutter_health_app_new/screen/patientInput_screen.dart';
 import 'package:flutter_health_app_new/providers/user_provider.dart';
@@ -62,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ).login(_rememberMe, _emailController.text.trim());
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const MainTabScreen()),
+            MaterialPageRoute(builder: (_) => const PatientInputDashboard()),
           );
         } else {
           _showError('Sign in not complete. Please verify your credentials.');
