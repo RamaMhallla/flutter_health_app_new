@@ -58,7 +58,7 @@ class _PatientMedicalHistoryScreenState
       drawer: const DrawerWidget(),
       appBar: AppBar(
         title: Text(
-          "Medical History Dashboard",
+          "Medical History",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1.1,
